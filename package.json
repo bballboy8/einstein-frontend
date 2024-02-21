@@ -1,0 +1,40 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.18",
+    "@material-tailwind/react": "^2.1.8",
+    "@nextui-org/react": "^2.2.9",
+    "antd": "^5.13.2",
+    "antd-init": "^2.0.7",
+    "axios": "^1.6.5",
+    "framer-motion": "^10.17.9",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-code-blocks": "^0.1.6",
+    "react-contexify": "^6.0.0",
+    "react-copy-to-clipboard": "^5.1.0",
+    "react-dom": "^18",
+    "react-markdown": "^9.0.1",
+    "react-notifications": "^1.7.4",
+    "rehype-mathjax": "^6.0.0",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0",
+    "stripe": "^14.14.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0"
+  }
+}
