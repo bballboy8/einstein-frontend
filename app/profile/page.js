@@ -10,7 +10,7 @@ import axios from "axios";
 import { apiURL } from "@/config";
 import {
   NotificationContainer,
-  NotificationManager
+  NotificationManager,
 } from "react-notifications";
 
 const Index = () => {
@@ -21,18 +21,19 @@ const Index = () => {
   const [setting, setSetting] = useState(false);
   const [userData, setUserData] = useState({
     username: "",
+    full_name: "",
     name: "",
     email: "",
     company_name: "",
     job_title: "",
-    use_case: ""
+    use_case: "",
   });
   const [userInfo, setUserInfo] = useState({});
 
   const setMemberShipe = () => {
     axios
       .post("https://localhost:3000/api/stripe", {
-        email: email
+        email: email,
       })
       .then((res) => {
         window.location.href = res.data.url;
@@ -49,7 +50,7 @@ const Index = () => {
         `${apiURL}/auth/update/`,
         { data: userData },
         {
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         }
       )
       .then((response) => {
@@ -66,17 +67,20 @@ const Index = () => {
   const getUserData = () => {
     console.log("get user data");
     let userEmail = localStorage.getItem("email");
+    console.log(userEmail);
+
     axios
       .post(
         `${apiURL}/auth/getuser/`,
         { email: userEmail },
         {
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         }
       )
       .then((response) => {
-        console.log(response.data.data[0]);
-        setUserInfo(response.data.data[0]);
+        console.log("response: ");
+        console.log(response.data.data);
+        setUserInfo(response.data.data);
       })
       .catch((err) => {
         console.log(err);
@@ -369,7 +373,7 @@ const Index = () => {
               <p className=" text-2xl font-bold leading-normal text-[#FFF] font-helvetica">
                 Sign Out
               </p>
-              <Link href={"/sign"}>
+              <Link href={"/register"}>
                 <div
                   className="px-7 py-4 flex flex-row gap-4 bg-[#445059] rounded-lg cursor-pointer"
                   onClick={() => localStorage.clear()}

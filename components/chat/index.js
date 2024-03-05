@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import React, { useEffect, useState, useRef } from "react";
+import { CloseOutlined } from "@ant-design/icons";
 import { useModelStatus } from "../context/ModelStatusContext";
 import Img_History from "@/components/img_history";
 import Text_History from "../text_history";
@@ -13,7 +14,7 @@ import {
   Tooltip,
   useDisclosure,
   Select,
-  SelectItem
+  SelectItem,
 } from "@nextui-org/react";
 import { Menu, Dropdown, ConfigProvider } from "antd";
 import useAutosizeTextArea from "./useAutosizeTextArea";
@@ -29,8 +30,140 @@ const ratioList = [
   "896x1152",
   "832x1216",
   "768x1344",
-  "640x1536"
+  "640x1536",
 ];
+
+const PrivacyPolicyContent = () => {
+  return (
+    <div className="modal-content">
+      <h2 className="modal-heading">Einstein Privacy Policy</h2>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Introduction</h3>
+        <p>
+          Einstein AI ("Einstein", "we", "us", or "our") respects the privacy of
+          its users ("user", "you", or "your") and is committed to protecting
+          your personal information. This Privacy Policy outlines our practices
+          regarding the collection, use, and disclosure of your information
+          through the use of our Einstein AI application ("Application") and any
+          of our services (collectively, "Services").
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Collection of Information</h3>
+        <p>
+          We collect information that you provide directly to us, such as when
+          you create an account, use our Services, or communicate with us. This
+          information may include your name, email address, and any other
+          information you choose to provide. We also collect non-personally
+          identifiable information, such as usage data and device identifiers,
+          to improve our Services.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Use of Information</h3>
+        <p>
+          The information we collect is used to provide, maintain, and improve
+          our Services, to communicate with you, and to personalize your
+          experience. We do not use your data without your consent, except as
+          required by law or as necessary to provide our Services to you.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">
+          Sharing and Disclosure of Information
+        </h3>
+        <p>
+          We do not sell your sensitive data to third parties. Information may
+          be shared with third-party service providers who perform services on
+          our behalf, under strict privacy agreements. We may also disclose your
+          information if required by law or to protect our rights and the safety
+          of our users.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Data Security</h3>
+        <p>
+          We implement appropriate technical and organizational measures to
+          protect the security of your personal information. However, no
+          security system is impenetrable, and we cannot guarantee the security
+          of our data.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Limitation of Liability</h3>
+        <p>
+          Einstein AI provides its Services "as is" and makes no representations
+          or warranties of any kind, express or implied, as to the Services'
+          operation or the information, content, materials, or products included
+          on the Services. To the full extent permissible by applicable law,
+          Einstein disclaims all warranties, express or implied, including, but
+          not limited to, implied warranties of merchantability and fitness for
+          a particular purpose. Einstein will not be liable for any damages of
+          any kind arising from the use of the Services, including, but not
+          limited to direct, indirect, incidental, punitive, and consequential
+          damages.
+        </p>
+        <p>
+          Under no circumstances will Einstein AI be liable for any loss or
+          damage caused by your reliance on information obtained through the
+          Services or caused by the user's conduct. Einstein AI does not assume
+          any responsibility for errors or omissions in any content or
+          information provided within the Services.
+        </p>
+        <p>
+          By using the Einstein AI Services, you expressly agree that your use
+          of the Services is at your sole risk. You shall not hold Einstein AI
+          or its licensors and suppliers, as applicable, liable for any damages
+          that result from your use of the Services. This comprehensive
+          limitation of liability applies to all damages of any kind, including
+          (without limitation) compensatory, direct, indirect, or consequential
+          damages; loss of data, income, or profit; loss of or damage to
+          property; and claims of third parties.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">User Consent</h3>
+        <p>
+          By using our Services, you consent to the collection, use, and sharing
+          of your information as described in this Privacy Policy. We will not
+          use your data for any purpose without your consent.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Changes to This Privacy Policy</h3>
+        <p>
+          We may update this Privacy Policy from time to time. We will notify
+          you of any changes by posting the new Privacy Policy on this page. You
+          are advised to review this Privacy Policy periodically for any
+          changes.
+        </p>
+      </div>
+
+      <div className="modal-section">
+        <h3 className="modal-subheading">Contact Us</h3>
+        <p>
+          If you have any questions about this Privacy Policy, please contact us
+          at{" "}
+          <a
+            href="mailto:coreintelligencellc@gmail.com"
+            style={{ textDecoration: "underline" }}
+          >
+            coreintelligencellc@gmail.com
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const Chat = ({
   chatStatus,
@@ -46,7 +179,7 @@ const Chat = ({
   imageModel,
   imgHistoryID,
   setImgHistoryID,
-  imgHistoryData
+  imgHistoryData,
 }) => {
   const { textStatus, setTextStatus } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
@@ -70,6 +203,12 @@ const Chat = ({
   const [id, setID] = useState();
   const textAreaRef = useRef(null);
   const req_qa_box = useRef(null);
+  const [isPrivacyPolicyModalOpen, setIsPrivacyPolicyModalOpen] =
+    useState(false);
+
+  const handlePrivacyPolicyClick = () => {
+    setIsPrivacyPolicyModalOpen(true);
+  };
 
   const menu = (
     <div className="mb-4">
@@ -83,7 +222,7 @@ const Chat = ({
               </div>
             }
             classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"]
+              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
             }}
             delay={0}
             closeDelay={0}
@@ -109,7 +248,7 @@ const Chat = ({
               </div>
             }
             classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"]
+              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
             }}
             delay={0}
             closeDelay={0}
@@ -135,7 +274,7 @@ const Chat = ({
               </div>
             }
             classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"]
+              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
             }}
             delay={0}
             closeDelay={0}
@@ -166,7 +305,7 @@ const Chat = ({
               </div>
             }
             classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"]
+              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
             }}
             delay={0}
             closeDelay={0}
@@ -192,7 +331,7 @@ const Chat = ({
               </div>
             }
             classNames={{
-              content: ["mx-5 py-2 px-0", "bg-[#2E353C]"]
+              content: ["mx-5 py-2 px-0", "bg-[#2E353C]"],
             }}
             delay={0}
             closeDelay={0}
@@ -223,7 +362,7 @@ const Chat = ({
               </div>
             }
             classNames={{
-              content: ["mx-5 py-2 px-0", "bg-[#2E353C]"]
+              content: ["mx-5 py-2 px-0", "bg-[#2E353C]"],
             }}
             delay={0}
             closeDelay={0}
@@ -284,7 +423,7 @@ const Chat = ({
     if (imageModel == false) {
       axios
         .get(`${apiURL}/ai/gethistoryByID/${id}`, {
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         })
         .then((response) => {
           let a = [];
@@ -303,7 +442,7 @@ const Chat = ({
       console.log("start img id data");
       axios
         .get(`${apiURL}/img/getImageDataByID/${id}`, {
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
         })
         .then((response) => {
           let a = [];
@@ -355,14 +494,14 @@ const Chat = ({
         prompt: value,
         id: chatHistroyID,
         type: selected,
-        userID: localStorage.getItem("userID")
+        userID: localStorage.getItem("userID"),
       });
       setChatTitle(value);
       setValue("");
       if (selected == "GPT-4") {
         axios
           .post(`${apiURL}/ai/gpt4`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -370,7 +509,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -383,15 +522,15 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 bot: response.data.data,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           });
       } else if (selected == "GPT-3.5") {
         axios
           .post(`${apiURL}/ai/gpt3`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -399,7 +538,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -412,9 +551,9 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 bot: response.data.data,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           })
           .catch((error) => {
@@ -423,7 +562,7 @@ const Chat = ({
       } else if (selected == "Gemini") {
         axios
           .post(`${apiURL}/ai/gemini`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -431,7 +570,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -444,15 +583,15 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 bot: response.data.data,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           });
       } else if (selected == "Mistral") {
         axios
           .post(`${apiURL}/ai/mistral`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -460,7 +599,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -473,15 +612,15 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 bot: response.data.data,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           });
       } else if (selected == "Perplexity") {
         axios
           .post(`${apiURL}/ai/perplexityai`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -489,7 +628,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -502,9 +641,9 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 bot: response.data.data,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           });
       }
@@ -519,13 +658,13 @@ const Chat = ({
         id: chatHistroyID,
         type: type,
         pasthistory: chatHistory,
-        userID: localStorage.getItem("userID")
+        userID: localStorage.getItem("userID"),
       });
       setValue("");
       if (modelType == "GPT-4") {
         axios
           .post(`${apiURL}/ai/gpt4`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -533,7 +672,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -545,7 +684,7 @@ const Chat = ({
       } else if (modelType == "GPT-3.5") {
         axios
           .post(`${apiURL}/ai/gpt3`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -561,7 +700,7 @@ const Chat = ({
       } else if (modelType == "Gemini") {
         axios
           .post(`${apiURL}/ai/gemini`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -569,7 +708,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -581,7 +720,7 @@ const Chat = ({
       } else if (modelType == "Mistral") {
         axios
           .post(`${apiURL}/ai/mistral`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -589,7 +728,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -601,7 +740,7 @@ const Chat = ({
       } else if (modelType == "Perplexity") {
         axios
           .post(`${apiURL}/ai/perplexityai`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             textResponseData = new_history.map((item) => {
@@ -609,7 +748,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -635,14 +774,14 @@ const Chat = ({
         type: imgSelected,
         id: "",
         userID: localStorage.getItem("userID"),
-        size: ratio
+        size: ratio,
       });
       setChatTitle(value);
       setValue("");
       if (imgSelected == "DALL-E") {
         axios
           .post(`${apiURL}/img/dall`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             let imgResponseData = new_history.map((item) => {
@@ -650,7 +789,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -663,9 +802,9 @@ const Chat = ({
               {
                 id: response.data.id,
                 title: value,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           })
           .catch((err) => {
@@ -674,7 +813,7 @@ const Chat = ({
       } else if (imgSelected == "Stable Diffusion XL") {
         axios
           .post(`${apiURL}/img/diffu_xl`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             console.log(response.data);
@@ -684,7 +823,7 @@ const Chat = ({
                   role: "assistant",
                   content: response.data.data,
                   type: response.data.type,
-                  size: response.data.size
+                  size: response.data.size,
                 };
               } else {
                 return item;
@@ -697,9 +836,9 @@ const Chat = ({
               {
                 id: response.data.id,
                 title: value,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           })
           .catch((err) => {
@@ -708,7 +847,7 @@ const Chat = ({
       } else if (imgSelected == "Stable Diffusion 2") {
         axios
           .post(`${apiURL}/img/diffu_two`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             console.log(response.data);
@@ -718,7 +857,7 @@ const Chat = ({
                   role: "assistant",
                   content: response.data.data,
                   type: response.data.type,
-                  size: response.data.size
+                  size: response.data.size,
                 };
               } else {
                 return item;
@@ -730,9 +869,9 @@ const Chat = ({
               {
                 id: response.data.id,
                 title: value,
-                date: response.data.date
+                date: response.data.date,
               },
-              ...historySideData
+              ...historySideData,
             ]);
           })
           .catch((err) => {
@@ -746,13 +885,13 @@ const Chat = ({
         type: imgModelType,
         id: imgHistoryID,
         userID: localStorage.getItem("userID"),
-        size: ratio
+        size: ratio,
       });
       setValue("");
       if (imgModelType == "DALL-E") {
         axios
           .post(`${apiURL}/img/dall`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             let imgResponseData = new_history.map((item) => {
@@ -760,7 +899,7 @@ const Chat = ({
                 return {
                   role: "assistant",
                   content: response.data.data,
-                  type: response.data.type
+                  type: response.data.type,
                 };
               } else {
                 return item;
@@ -775,7 +914,7 @@ const Chat = ({
       } else if (imgModelType == "Stable Diffusion XL") {
         axios
           .post(`${apiURL}/img/diffu_xl`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             console.log(response);
@@ -785,7 +924,7 @@ const Chat = ({
                   role: "assistant",
                   content: response.data.data,
                   type: response.data.type,
-                  size: response.data.size
+                  size: response.data.size,
                 };
               } else {
                 return item;
@@ -800,7 +939,7 @@ const Chat = ({
       } else if (imgModelType == "Stable Diffusion 2") {
         axios
           .post(`${apiURL}/img/diffu_two`, data, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             let imgResponseData = new_history.map((item) => {
@@ -809,7 +948,7 @@ const Chat = ({
                   role: "assistant",
                   content: response.data.data,
                   type: response.data.type,
-                  size: response.data.size
+                  size: response.data.size,
                 };
               } else {
                 return item;
@@ -950,7 +1089,7 @@ const Chat = ({
                       tabList: "w-full relative border-divider p-0",
                       cursor: "w-full bg-[#2E353C] p-0",
                       tabContent:
-                        "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization"
+                        "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization",
                     }}
                     aria-label="Tabs variants"
                   >
@@ -972,7 +1111,7 @@ const Chat = ({
                       tabList: "w-full relative border-divider p-0",
                       cursor: "w-full bg-[#2E353C] p-0",
                       tabContent:
-                        "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization"
+                        "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization",
                     }}
                     aria-label="Tabs variants"
                   >
@@ -1016,7 +1155,7 @@ const Chat = ({
             classNames={{
               trigger: "bg-[#2E353C] text-[#FFF]",
               listbox: "bg-[#2E353C] m-0 p-0 text-[#FFF]",
-              popoverContent: "bg-[#2E353C]"
+              popoverContent: "bg-[#2E353C]",
             }}
           >
             <SelectItem
@@ -1089,8 +1228,8 @@ const Chat = ({
               classNames={{
                 base: ["before:bg-[##2E353C]"],
                 content: [
-                  "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                ]
+                  "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                ],
               }}
               motionProps={{
                 variants: {
@@ -1098,17 +1237,17 @@ const Chat = ({
                     opacity: 0,
                     transition: {
                       duration: 0.1,
-                      ease: "easeIn"
-                    }
+                      ease: "easeIn",
+                    },
                   },
                   enter: {
                     opacity: 1,
                     transition: {
                       duration: 0.15,
-                      ease: "easeOut"
-                    }
-                  }
-                }
+                      ease: "easeOut",
+                    },
+                  },
+                },
               }}
             >
               <Image
@@ -1128,8 +1267,8 @@ const Chat = ({
                   token: {
                     colorBgBase: "#181818",
                     borderRadius: 20,
-                    colorBorder: "#313535"
-                  }
+                    colorBorder: "#313535",
+                  },
                 }}
               >
                 <Dropdown overlay={menu}>
@@ -1192,9 +1331,37 @@ const Chat = ({
           </div>
         </div>
         <div className="max-msm:hidden text-[#FFF] text-[12px] font-normal leading-normal mt-3">
-          Einstein is not liable for any damages or false information displayed
-          on the Einstein interface
+          Einstein may display inaccurate or dangerous information, please use
+          responsibly.{" "}
+          <a
+            href="#"
+            onClick={handlePrivacyPolicyClick}
+            style={{ textDecoration: "underline" }}
+          >
+            Your privacy & Einstein Apps
+          </a>
         </div>
+
+        {/* Privacy Policy Modal */}
+        {isPrivacyPolicyModalOpen && (
+          <div className="modal-container">
+            <div
+              className="modal-backdrop"
+              onClick={() => setIsPrivacyPolicyModalOpen(false)}
+            ></div>
+            <div className="modal-box">
+              <div className="modal-header">
+                <CloseOutlined
+                  className="close-icon"
+                  onClick={() => setIsPrivacyPolicyModalOpen(false)}
+                />
+              </div>
+              <div className="modal-content-scrollable">
+                <PrivacyPolicyContent />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

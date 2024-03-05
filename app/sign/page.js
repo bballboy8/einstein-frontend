@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import {
   NotificationContainer,
-  NotificationManager
+  NotificationManager,
 } from "react-notifications";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -19,11 +19,11 @@ const Index = () => {
     username: "",
     email: "",
     password: "",
-    confirmpassword: ""
+    confirmpassword: "",
   });
   const [logData, setLogData] = useState({
     username: "",
-    password: ""
+    password: "",
   });
   const [validStatus, setValidStatus] = useState(false);
   const [lengthValid, setLengthValid] = useState(false);
@@ -38,12 +38,12 @@ const Index = () => {
   };
 
   const confirmpassVisibleFunc = () => {
-    if(confirmpassVisible == true) setConfirmpassVisible(false);
+    if (confirmpassVisible == true) setConfirmpassVisible(false);
     else setConfirmpassVisible(true);
   };
 
   const logpassVisibleFunc = () => {
-    if(logpassVisible == true) setLogpassVisible(false);
+    if (logpassVisible == true) setLogpassVisible(false);
     else setLogpassVisible(true);
   };
 
@@ -82,7 +82,7 @@ const Index = () => {
       if (validEmailStatus == false) {
         axios
           .post(`${apiURL}/auth/signup`, userData, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
             NotificationManager.success(response.data.message);
@@ -96,9 +96,18 @@ const Index = () => {
 
   const SignIn = () => {
     console.log(logData);
+    //           NotificationManager.success(
+    //         "Logged in successfully",
+    //         "Success",
+    //         2000
+    //       );
+    // localStorage.setItem("token", "132");
+    // localStorage.setItem("userID", "123");
+    // localStorage.setItem("email","asdsd");
+    // router.push("/");
     axios
       .post(`${apiURL}/auth/signin`, logData, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         console.log(response.data);
@@ -163,7 +172,11 @@ const Index = () => {
                     height={30}
                     className="ml-1"
                     onClick={() => logpassVisibleFunc()}
-                    src={logpassVisible == true ? "/svg/eye.svg" : "/svg/eyeslash.svg"}
+                    src={
+                      logpassVisible == true
+                        ? "/svg/eye.svg"
+                        : "/svg/eyeslash.svg"
+                    }
                   />
                 </div>
               </div>
@@ -222,7 +235,7 @@ const Index = () => {
                         onChange={(e) =>
                           setUserData({
                             ...userData,
-                            firstname: e.target.value
+                            firstname: e.target.value,
                           })
                         }
                       />
@@ -329,7 +342,9 @@ const Index = () => {
                         className="ml-1"
                         onClick={() => passVisibleFunc()}
                         src={
-                          passVisible == true ? "/svg/eye.svg" : "/svg/eyeslash.svg"
+                          passVisible == true
+                            ? "/svg/eye.svg"
+                            : "/svg/eyeslash.svg"
                         }
                       />
                     </div>
@@ -357,7 +372,7 @@ const Index = () => {
                         onChange={(e) =>
                           setUserData({
                             ...userData,
-                            confirmpassword: e.target.value
+                            confirmpassword: e.target.value,
                           })
                         }
                       />
@@ -368,7 +383,9 @@ const Index = () => {
                         className="ml-1"
                         onClick={() => confirmpassVisibleFunc()}
                         src={
-                          confirmpassVisible == true ? "/svg/eye.svg" : "/svg/eyeslash.svg"
+                          confirmpassVisible == true
+                            ? "/svg/eye.svg"
+                            : "/svg/eyeslash.svg"
                         }
                       />
                     </div>

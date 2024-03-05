@@ -23,7 +23,7 @@ const Text_History = ({
   tabSelected,
   type,
   setBlur,
-  blur
+  blur,
 }) => {
   const [copyStatus, setCopyStatus] = useState(false);
   const { textStatus, setTextStatus } = useModelStatus();
@@ -34,13 +34,13 @@ const Text_History = ({
     "GPT-4",
     "Gemini",
     "Perplexity",
-    "Mistral"
+    "Mistral",
   ]);
 
   const getDataByType = (id, i) => {
     axios
       .get(`${apiURL}/ai/gethistoryByID/${id}`, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         let a = [...chatHistory];
@@ -57,7 +57,7 @@ const Text_History = ({
   const Summarize = (data, id) => {
     axios
       .post(`${apiURL}/ai/summarize`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         let a = [...chatHistory];
@@ -101,11 +101,11 @@ const Text_History = ({
     });
     let data = {
       historyData: pasthistory,
-      type: type
+      type: type,
     };
     axios
       .post(`${apiURL}/ai/regenerate`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         console.log(response.data.data);
@@ -176,20 +176,20 @@ const Text_History = ({
                     history: pasthistory,
                     id: chatHistroyID,
                     number: (index - 1) / 2,
-                    userID: localStorage.getItem("userID")
+                    userID: localStorage.getItem("userID"),
                   };
                   setSwitchStatus(true);
                   setLoading(true);
                   setID(index);
                   let x = {
                     id: (index - 1) / 2,
-                    historyID: chatHistroyID
+                    historyID: chatHistroyID,
                   };
                   axios
                     .post(`${apiURL}/ai/getType/`, x, {
                       headers: {
-                        "Content-Type": "application/json"
-                      }
+                        "Content-Type": "application/json",
+                      },
                     })
                     .then((response) => {
                       if (response.data.data.indexOf(tabSelected) == -1)
@@ -202,7 +202,7 @@ const Text_History = ({
                   cursor: "w-full bg-[#2E353C] p-0",
                   tabContent:
                     "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization",
-                  panel: "text-[100px]"
+                  panel: "text-[100px]",
                 }}
                 aria-label="Tabs variants"
               >
@@ -242,8 +242,8 @@ const Text_History = ({
                 classNames={{
                   base: ["before:bg-[##2E353C]"],
                   content: [
-                    "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                  ]
+                    "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                  ],
                 }}
                 motionProps={{
                   variants: {
@@ -251,17 +251,17 @@ const Text_History = ({
                       opacity: 0,
                       transition: {
                         duration: 0.1,
-                        ease: "easeIn"
-                      }
+                        ease: "easeIn",
+                      },
                     },
                     enter: {
                       opacity: 1,
                       transition: {
                         duration: 0.15,
-                        ease: "easeOut"
-                      }
-                    }
-                  }
+                        ease: "easeOut",
+                      },
+                    },
+                  },
                 }}
               >
                 <Image
@@ -320,8 +320,8 @@ const Text_History = ({
                         classNames={{
                           base: ["before:bg-[#2E353C]"],
                           content: [
-                            "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                          ]
+                            "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                          ],
                         }}
                         isOpen={copyStatus}
                         onOpenChange={() => setCopyStatus(false)}
@@ -331,17 +331,17 @@ const Text_History = ({
                               opacity: 0,
                               transition: {
                                 duration: 0.1,
-                                ease: "easeIn"
-                              }
+                                ease: "easeIn",
+                              },
                             },
                             enter: {
                               opacity: 1,
                               transition: {
                                 duration: 0.15,
-                                ease: "easeOut"
-                              }
-                            }
-                          }
+                                ease: "easeOut",
+                              },
+                            },
+                          },
                         }}
                       >
                         <Image
@@ -364,8 +364,8 @@ const Text_History = ({
                     classNames={{
                       base: ["before:bg-[##2E353C]"],
                       content: [
-                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                      ]
+                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                      ],
                     }}
                     motionProps={{
                       variants: {
@@ -373,17 +373,17 @@ const Text_History = ({
                           opacity: 0,
                           transition: {
                             duration: 0.1,
-                            ease: "easeIn"
-                          }
+                            ease: "easeIn",
+                          },
                         },
                         enter: {
                           opacity: 1,
                           transition: {
                             duration: 0.15,
-                            ease: "easeOut"
-                          }
-                        }
-                      }
+                            ease: "easeOut",
+                          },
+                        },
+                      },
                     }}
                   >
                     <Image
@@ -408,8 +408,8 @@ const Text_History = ({
                     classNames={{
                       base: ["before:bg-[##2E353C]"],
                       content: [
-                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                      ]
+                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                      ],
                     }}
                     motionProps={{
                       variants: {
@@ -417,17 +417,17 @@ const Text_History = ({
                           opacity: 0,
                           transition: {
                             duration: 0.1,
-                            ease: "easeIn"
-                          }
+                            ease: "easeIn",
+                          },
                         },
                         enter: {
                           opacity: 1,
                           transition: {
                             duration: 0.15,
-                            ease: "easeOut"
-                          }
-                        }
-                      }
+                            ease: "easeOut",
+                          },
+                        },
+                      },
                     }}
                   >
                     <Image
@@ -452,8 +452,8 @@ const Text_History = ({
                     classNames={{
                       base: ["before:bg-[##2E353C]"],
                       content: [
-                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                      ]
+                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                      ],
                     }}
                     motionProps={{
                       variants: {
@@ -461,17 +461,17 @@ const Text_History = ({
                           opacity: 0,
                           transition: {
                             duration: 0.1,
-                            ease: "easeIn"
-                          }
+                            ease: "easeIn",
+                          },
                         },
                         enter: {
                           opacity: 1,
                           transition: {
                             duration: 0.15,
-                            ease: "easeOut"
-                          }
-                        }
-                      }
+                            ease: "easeOut",
+                          },
+                        },
+                      },
                     }}
                   >
                     <Image
