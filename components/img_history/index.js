@@ -12,7 +12,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  useDisclosure
+  useDisclosure,
 } from "@nextui-org/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,30 +31,33 @@ const Img_History = ({
   setSwitchStatus,
   setID,
   tabSelected,
-  ratio
+  ratio,
 }) => {
   const { imgStatus, setImgStatus } = useModelStatus();
   const [imageList, setImageList] = useState([
     "DALL-E",
     "Stable Diffusion XL",
-    "Stable Diffusion 2"
+    "Stable Diffusion 2",
   ]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [heart, setHeart] = useState(false);
   const [upScale, setUpScale] = useState(false);
   const [number, setNumber] = useState();
 
-  const download = (data) => {
-    const url = data
-    axios.post("http://localhost:3000/api/download", {data: url}).then((response) => {
-      console.log(response);
-    });
+  const download = (url) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "image.jpg");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const Summarize = (data, id) => {
+    console.log("Sending data: ", data);
     axios
       .post(`${apiURL}/img/summarize`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         let a = [...imgHistory];
@@ -68,7 +71,7 @@ const Img_History = ({
   const getDataByType = (id, i) => {
     axios
       .get(`${apiURL}/img/getImageDataByID/${id}`, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         let a = [...imgHistory];
@@ -130,7 +133,7 @@ const Img_History = ({
                     prompt: imgHistory[index - 1].content,
                     number: (index - 1) / 2,
                     userID: localStorage.getItem("userID"),
-                    size: ratio
+                    size: ratio,
                   };
                   console.log(imgHistory);
                   setSwitchStatus(true);
@@ -138,19 +141,29 @@ const Img_History = ({
                   setID(index);
                   let x = {
                     id: (index - 1) / 2,
-                    historyID: imgHistoryID
+                    historyID: imgHistoryID,
                   };
+                  console.log("Sending this data: ", x);
+                  console.log("Tab selected: ", tabSelected);
                   axios
                     .post(`${apiURL}/img/getType/`, x, {
                       headers: {
-                        "Content-Type": "application/json"
-                      }
+                        "Content-Type": "application/json",
+                      },
                     })
                     .then((response) => {
-                      console.log(response.data.data, tabSelected);
-                      if (response.data.data.indexOf(tabSelected) == -1)
+                      console.log(response.data);
+                      console.log("Output", response.data.data, tabSelected);
+                      console.log(
+                        "index;",
+                        response.data.data.indexOf(tabSelected)
+                      );
+                      if (response.data.data.indexOf(tabSelected) == -1) {
+                        console.log("sumData:", sumData);
+                        console.log("index:", index);
+
                         Summarize(sumData, index);
-                      else getDataByType(imgHistoryID, index);
+                      } else getDataByType(imgHistoryID, index);
                     });
                 }}
                 classNames={{
@@ -158,7 +171,7 @@ const Img_History = ({
                   cursor: "w-full bg-[#2E353C] p-0",
                   tabContent:
                     "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization",
-                  panel: "text-[100px]"
+                  panel: "text-[100px]",
                 }}
                 aria-label="Tabs variants"
               >
@@ -198,8 +211,8 @@ const Img_History = ({
                 classNames={{
                   base: ["before:bg-[##2E353C]"],
                   content: [
-                    "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"
-                  ]
+                    "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                  ],
                 }}
                 motionProps={{
                   variants: {
@@ -207,17 +220,17 @@ const Img_History = ({
                       opacity: 0,
                       transition: {
                         duration: 0.1,
-                        ease: "easeIn"
-                      }
+                        ease: "easeIn",
+                      },
                     },
                     enter: {
                       opacity: 1,
                       transition: {
                         duration: 0.15,
-                        ease: "easeOut"
-                      }
-                    }
-                  }
+                        ease: "easeOut",
+                      },
+                    },
+                  },
                 }}
               >
                 <Image
@@ -315,7 +328,7 @@ const Img_History = ({
                 className="bg-[#181818] z-[999] overflow-auto"
                 classNames={{
                   backdrop:
-                    "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
+                    "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20",
                 }}
               >
                 <ModalContent>
@@ -348,7 +361,9 @@ const Img_History = ({
                             height={24}
                             className="cursor-pointer"
                             src={"/svg/download.svg"}
-                            onClick={() => download(imgHistory[id].content[number].url)}
+                            onClick={() =>
+                              download(imgHistory[id].content[number].url)
+                            }
                           />
                           <Image
                             alt=""

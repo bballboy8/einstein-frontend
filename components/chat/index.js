@@ -778,6 +778,7 @@ const Chat = ({
       });
       setChatTitle(value);
       setValue("");
+      console.log("Sending api data: ", data);
       if (imgSelected == "DALL-E") {
         axios
           .post(`${apiURL}/img/dall`, data, {
@@ -888,6 +889,8 @@ const Chat = ({
         size: ratio,
       });
       setValue("");
+      console.log("Sending api data: ", data);
+
       if (imgModelType == "DALL-E") {
         axios
           .post(`${apiURL}/img/dall`, data, {
