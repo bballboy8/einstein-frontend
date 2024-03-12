@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useModelStatus } from "../context/ModelStatusContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,6 +37,70 @@ const Text_History = ({
     "Mistral",
   ]);
 
+  const [editingMessage, setEditingMessage] = useState("");
+  const [editModeIndex, setEditModeIndex] = useState(-1);
+  const textareaRef = useRef(null);
+
+  const enterEditMode = (message) => {
+    setEditingMessage(message);
+  };
+
+  const handleEditChange = (e) => {
+    setEditingMessage(e.target.value);
+    autoResizeTextarea(e.target);
+  };
+
+  const autoResizeTextarea = (element) => {
+    element.style.height = "auto";
+    element.style.height = element.scrollHeight + "px";
+    element.style.width = "auto";
+    element.style.width = element.scrollWidth + "px";
+  };
+
+  // Function to cancel edit
+  const cancelEdit = () => {
+    // Reset edit mode index to -1 to exit edit mode
+    setEditModeIndex(-1);
+  };
+
+  const submitEdit = (index) => {
+    console.log("Submit Edit CLicked! now call api!");
+    const updatedChatHistory = [...chatHistory];
+    updatedChatHistory[index].content = editingMessage;
+    updatedChatHistory.splice(index + 1); // Remove messages after the edited message
+
+    let pasthistory = [];
+    updatedChatHistory.map((item, index) => {
+      let data = item;
+      pasthistory.push(data);
+    });
+
+    let sumData = {
+      type: type,
+      history: pasthistory,
+      id: chatHistroyID,
+      number: (index - 1) / 2,
+      userID: localStorage.getItem("userID"),
+    };
+
+    updatedChatHistory.push({ role: "loading" });
+    setChatHistory(updatedChatHistory);
+
+    // Mocking API call, replace it with your actual API call
+    setTimeout(() => {
+      axios
+        .post(`${apiURL}/ai/edit`, sumData, {
+          headers: { "Content-Type": "application/json" },
+        })
+        .then((response) => {
+          let a = [...pasthistory];
+          a.push(response.data.data);
+          setLoading(false);
+          setChatHistory(a);
+        });
+    }, 2000); // Mock API response time (2 seconds)
+  };
+
   const getDataByType = (id, i) => {
     axios
       .get(`${apiURL}/ai/gethistoryByID/${id}`, {
@@ -53,6 +117,20 @@ const Text_History = ({
         setChatHistory(a);
       });
   };
+
+  const handleLoading = () => {
+    // Handling loading state
+    setLoading(true);
+    setEditModeIndex(-1); // Reset edit mode index
+    setEditingMessage(""); // Reset editing message
+  };
+
+  useEffect(() => {
+    // Adjust initial width and height based on content
+    if (textareaRef.current) {
+      autoResizeTextarea(textareaRef.current);
+    }
+  }, []);
 
   const Summarize = (data, id) => {
     axios
@@ -132,13 +210,94 @@ const Text_History = ({
 
   return (
     <div key={index} className="flex flex-col w-full">
-      {data.role == "user" ? (
+      {data.role === "user" ? (
         <div className={`flex justify-end w-full mb-4 pr-5 max-mxl:pr-0`}>
-          <p className="max-w-[650px] max-xl:max-w-[400px] max-msm:max-w-[250px] break-words text-[20px] text-[#FFF] font-helvetica font-normal leading-8 bg-[#0A84FF] rounded-[20px] py-3 px-5">
-            <ReactMarkDown data={data.content} />
-          </p>
+          {editModeIndex === index ? (
+            <div className="flex flex-col mt-4">
+              <textarea
+                value={editingMessage}
+                onChange={handleEditChange}
+                className="px-3 py-2 border border-white rounded-md w-auto focus:outline-none focus:ring focus:border-blue-300 resize-none text-white bg-transparent"
+                style={{
+                  minWidth: "600px",
+                  maxWidth: "100%",
+                  minHeight: "100px",
+                }}
+                ref={textareaRef}
+              />
+              <div className="mt-3">
+                <div className="flex  justify-end items-center">
+                  <button
+                    className="px-2 py-1 whitespace-nowrap rounded-md bg-blue-500 hover:bg-blue-700 text-white mr-2"
+                    onClick={() => {
+                      handleLoading(); // Call handleLoading to handle loading state
+                      submitEdit(index);
+                    }}
+                  >
+                    Submit & Save
+                  </button>
+                  <button
+                    className="px-2 py-1 text-white rounded-md border border-indigo-400 border-solid text-center"
+                    onClick={() => cancelEdit(index)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap flex-row mt-4">
+              <Tooltip
+                content={<p className="text-[#FFF]">Edit</p>}
+                showArrow
+                placement="bottom"
+                delay={0}
+                closeDelay={0}
+                classNames={{
+                  base: ["before:bg-[##2E353C]"],
+                  content: [
+                    "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                  ],
+                }}
+                motionProps={{
+                  variants: {
+                    exit: {
+                      opacity: 0,
+                      transition: {
+                        duration: 0.1,
+                        ease: "easeIn",
+                      },
+                    },
+                    enter: {
+                      opacity: 1,
+                      transition: {
+                        duration: 0.15,
+                        ease: "easeOut",
+                      },
+                    },
+                  },
+                }}
+              >
+                <Image
+                  alt=""
+                  width={16}
+                  height={21}
+                  onClick={() => {
+                    enterEditMode(data.content);
+                    setEditModeIndex(index);
+                  }}
+                  src={"svg/edit.svg"}
+                  className="cursor-pointer"
+                />
+              </Tooltip>
+              <div className="max-w-[650px] max-xl:max-w-[400px] max-msm:max-w-[250px] break-words text-[20px] text-[#FFF] font-helvetica font-normal leading-8 bg-[#0A84FF] rounded-[20px] py-3 px-5 ml-2">
+                <ReactMarkDown data={data.content} />
+              </div>
+            </div>
+          )}
         </div>
       ) : null}
+
       {data.role == "loading" ? (
         <div className="flex flex-row justify-center mb-2">
           <div className="w-[100px] bg-[#23272B] rounded-[20px] mt-4">
