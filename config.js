@@ -1,3 +1,3 @@
-const apiURL = "https://onespot.ai/api";
+const apiURL = "http://localhost/api";
 
 export { apiURL };
