@@ -10,7 +10,7 @@ import {
   Separator,
   Submenu,
   useContextMenu,
-  contextMenu 
+  contextMenu,
 } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { Tooltip } from "@nextui-org/react";
@@ -31,7 +31,7 @@ const HistorySider = ({
   imageModel,
   setImageModel,
   setChatHistoryData,
-  setImgHistoryData
+  setImgHistoryData,
 }) => {
   const { settingModel, setSettingModel } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
@@ -42,7 +42,7 @@ const HistorySider = ({
   const displayContextMenu = (event, id) => {
     contextMenu.show({
       id,
-      event
+      event,
     });
   };
 
@@ -51,14 +51,15 @@ const HistorySider = ({
   };
 
   const getHistoryData = () => {
+    console.log("Get History is calling!");
     setNewChatData([]);
     const userID = localStorage.getItem("userID");
     const data = {
-      id: userID
+      id: userID,
     };
     axios
       .post(`${apiURL}/ai/gethistory`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         setHistorySideData(response.data.data);
@@ -69,11 +70,11 @@ const HistorySider = ({
     setNewChatData([]);
     const userID = localStorage.getItem("userID");
     const data = {
-      id: userID
+      id: userID,
     };
     axios
       .post(`${apiURL}/img/gethistory`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         setHistorySideData(response.data.data);
@@ -84,11 +85,11 @@ const HistorySider = ({
     console.log(filterData);
     let data = {
       searchString: filterData,
-      id: localStorage.getItem("userID")
+      id: localStorage.getItem("userID"),
     };
     axios
       .post(`${apiURL}/ai/search`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         console.log(response.data.data);
@@ -97,10 +98,14 @@ const HistorySider = ({
   };
 
   useEffect(() => {
+    console.log("---> this useEffect called!");
+
     setNewChatData(historySideData);
   }, [historySideData]);
 
   useEffect(() => {
+    console.log("this useEffect called!");
+
     if (imageModel == false) getHistoryData();
     else getImgSideData();
   }, [imageModel]);
@@ -151,7 +156,7 @@ const HistorySider = ({
           className=""
           classNames={{
             base: ["before:bg-[##2E353C]"],
-            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"]
+            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"],
           }}
           motionProps={{
             variants: {
@@ -159,17 +164,17 @@ const HistorySider = ({
                 opacity: 0,
                 transition: {
                   duration: 0.1,
-                  ease: "easeIn"
-                }
+                  ease: "easeIn",
+                },
               },
               enter: {
                 opacity: 1,
                 transition: {
                   duration: 0.15,
-                  ease: "easeOut"
-                }
-              }
-            }
+                  ease: "easeOut",
+                },
+              },
+            },
           }}
         >
           <Image
@@ -199,7 +204,7 @@ const HistorySider = ({
           closeDelay={0}
           classNames={{
             base: ["before:bg-[##2E353C]"],
-            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"]
+            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"],
           }}
           motionProps={{
             variants: {
@@ -207,17 +212,17 @@ const HistorySider = ({
                 opacity: 0,
                 transition: {
                   duration: 0.1,
-                  ease: "easeIn"
-                }
+                  ease: "easeIn",
+                },
               },
               enter: {
                 opacity: 1,
                 transition: {
                   duration: 0.15,
-                  ease: "easeOut"
-                }
-              }
-            }
+                  ease: "easeOut",
+                },
+              },
+            },
           }}
         >
           <Image
@@ -248,7 +253,7 @@ const HistorySider = ({
                 // setMobileStatus(true);
                 setClickChat(true);
               }}
-              onContextMenu={(e) => displayContextMenu(e, 'context-menu-basic')}
+              onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
             >
               <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full mt-4 flex flex-row items-center justify-center">
                 <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
@@ -299,7 +304,7 @@ const HistorySider = ({
                 // setMobileStatus(true);
                 setClickChat(true);
               }}
-              onContextMenu={(e) => displayContextMenu(e, 'context-menu-basic')}
+              onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
             >
               <div className="flex flex-row justify-center w-full">
                 <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full flex flex-row items-center justify-center">
