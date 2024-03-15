@@ -14,7 +14,7 @@ export default function Home() {
   const [chatHistroyID, setChatHistoryID] = useState("");
   const [imgHistoryID, setImgHistoryID] = useState("");
   const [chatHistroyData, setChatHistoryData] = useState([]);
-  const [imgHistoryData, setImgHistoryData] = useState([])
+  const [imgHistoryData, setImgHistoryData] = useState([]);
   const [historySideData, setHistorySideData] = useState([]);
   const [chatTitle, setChatTitle] = useState("Chat Title");
   const [mobileStatus, setMobileStatus] = useState(false);
@@ -23,7 +23,7 @@ export default function Home() {
   const [imageModel, setImageModel] = useState(false);
 
   const NewChat = () => {
-    setToggleStatus(1)
+    setToggleStatus(1);
     setChatStatus(false);
     setChatHistoryID("");
     setImgHistoryID("");
