@@ -9,6 +9,8 @@ import localFont from "next/font/local";
 import "react-notifications/lib/notifications.css";
 import "./globals.css";
 import "./contexify.css";
+import { GOOGLE_CLIENT_ID } from "@/config";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const inter = Inter({ subsets: ["latin"] });
 const nasalization = localFont({
@@ -42,9 +44,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${nasalization.variable} ${montserrat.variable} ${helvetica.variable} ${helvetica_neue.variable}`}
       >
-        <ModelStatusProvider>
-          <NewChatProvider>{children}</NewChatProvider>
-        </ModelStatusProvider>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+          <ModelStatusProvider>
+            <NewChatProvider>{children}</NewChatProvider>
+          </ModelStatusProvider>
+        </GoogleOAuthProvider>
+        ;
       </body>
     </html>
   );

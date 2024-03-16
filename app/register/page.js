@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
 
 import { apiURL } from "@/config";
 import {
@@ -32,6 +33,61 @@ const RegistrationOptions = () => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showRegistrationOptions, setShowRegistrationOptions] = useState(true);
   const [showEmailCodeForm, setShowEmailCodeForm] = useState(false);
+  const [user, setUser] = useState([]);
+
+  const googleLoginRef = useRef(null);
+
+  const login = useGoogleLogin({
+    onSuccess: (codeResponse) => setUser(codeResponse),
+    onError: (error) =>
+      NotificationManager.warning(
+        "Login with Google failed! " + error,
+        "Warning"
+      ),
+  });
+
+  useEffect(() => {
+    if (user) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.access_token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+        .then((res) => {
+          console.log("user data: ", res.data);
+          axios
+            .post(`${apiURL}/auth/google_login`, res.data, {
+              headers: { "Content-Type": "application/json" },
+            })
+            .then((response) => {
+              console.log(response.data);
+              if (response.status === 201) {
+                NotificationManager.warning(response.data.message, "Warning");
+              }
+              if (response.status === 200) {
+                NotificationManager.success(
+                  "Logged in successfully",
+                  "Success",
+                  2000
+                );
+                localStorage.setItem("token", response.data.token);
+                localStorage.setItem("userID", response.data.user_id);
+                localStorage.setItem("email", response.data.email);
+                router.push("/");
+              }
+            })
+            .catch((error) => {
+              NotificationManager.error(error, "Error");
+            });
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [user]);
 
   const toggleRegistrationForm = () => {
     setShowRegistrationForm(true);
@@ -67,7 +123,7 @@ const RegistrationOptions = () => {
       altText: "Register with Google Icon",
       buttonText: "Register with Google",
       extraClasses: "bg-white text-gray-500",
-      onClick: () => alert("Register with Google clicked"),
+      onClick: () => login(),
     },
     {
       imageUrl: "svg/apple.svg",
