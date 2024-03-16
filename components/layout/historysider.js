@@ -10,7 +10,7 @@ import {
   Separator,
   Submenu,
   useContextMenu,
-  contextMenu 
+  contextMenu,
 } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { Tooltip } from "@nextui-org/react";
@@ -31,7 +31,7 @@ const HistorySider = ({
   imageModel,
   setImageModel,
   setChatHistoryData,
-  setImgHistoryData
+  setImgHistoryData,
 }) => {
   const { settingModel, setSettingModel } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
@@ -42,7 +42,7 @@ const HistorySider = ({
   const displayContextMenu = (event, id) => {
     contextMenu.show({
       id,
-      event
+      event,
     });
   };
 
@@ -54,11 +54,11 @@ const HistorySider = ({
     setNewChatData([]);
     const userID = localStorage.getItem("userID");
     const data = {
-      id: userID
+      id: userID,
     };
     axios
       .post(`${apiURL}/ai/gethistory`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         setHistorySideData(response.data.data);
@@ -69,11 +69,11 @@ const HistorySider = ({
     setNewChatData([]);
     const userID = localStorage.getItem("userID");
     const data = {
-      id: userID
+      id: userID,
     };
     axios
       .post(`${apiURL}/img/gethistory`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         setHistorySideData(response.data.data);
@@ -84,11 +84,11 @@ const HistorySider = ({
     console.log(filterData);
     let data = {
       searchString: filterData,
-      id: localStorage.getItem("userID")
+      id: localStorage.getItem("userID"),
     };
     axios
       .post(`${apiURL}/ai/search`, data, {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         console.log(response.data.data);
@@ -151,7 +151,7 @@ const HistorySider = ({
           className=""
           classNames={{
             base: ["before:bg-[##2E353C]"],
-            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"]
+            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"],
           }}
           motionProps={{
             variants: {
@@ -159,17 +159,17 @@ const HistorySider = ({
                 opacity: 0,
                 transition: {
                   duration: 0.1,
-                  ease: "easeIn"
-                }
+                  ease: "easeIn",
+                },
               },
               enter: {
                 opacity: 1,
                 transition: {
                   duration: 0.15,
-                  ease: "easeOut"
-                }
-              }
-            }
+                  ease: "easeOut",
+                },
+              },
+            },
           }}
         >
           <Image
@@ -199,7 +199,7 @@ const HistorySider = ({
           closeDelay={0}
           classNames={{
             base: ["before:bg-[##2E353C]"],
-            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"]
+            content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"],
           }}
           motionProps={{
             variants: {
@@ -207,17 +207,17 @@ const HistorySider = ({
                 opacity: 0,
                 transition: {
                   duration: 0.1,
-                  ease: "easeIn"
-                }
+                  ease: "easeIn",
+                },
               },
               enter: {
                 opacity: 1,
                 transition: {
                   duration: 0.15,
-                  ease: "easeOut"
-                }
-              }
-            }
+                  ease: "easeOut",
+                },
+              },
+            },
           }}
         >
           <Image
@@ -248,12 +248,23 @@ const HistorySider = ({
                 // setMobileStatus(true);
                 setClickChat(true);
               }}
-              onContextMenu={(e) => displayContextMenu(e, 'context-menu-basic')}
+              onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
             >
               <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full mt-4 flex flex-row items-center justify-center">
-                <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
-                  {item.title.at(0)?.toUpperCase()}
-                </p>
+                {item.thumbnail_url ? ( // Check if thumbnail_url exists
+                  // If thumbnail_url exists, display the Image component
+                  <Image
+                    src={item.thumbnail_url}
+                    alt=""
+                    width={36}
+                    height={36}
+                  />
+                ) : (
+                  // If thumbnail_url doesn't exist, display the fallback <p> tag
+                  <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
+                    {item.title.at(0)?.toUpperCase()}
+                  </p>
+                )}
               </div>
               <div className="flex flex-1 flex-col ml-4 w-full">
                 <div className="flex flex-row justify-between items-center">
@@ -299,13 +310,24 @@ const HistorySider = ({
                 // setMobileStatus(true);
                 setClickChat(true);
               }}
-              onContextMenu={(e) => displayContextMenu(e, 'context-menu-basic')}
+              onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
             >
               <div className="flex flex-row justify-center w-full">
                 <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full flex flex-row items-center justify-center">
-                  <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
-                    {item.title.at(0)?.toUpperCase()}
-                  </p>
+                  {item.thumbnail_url ? ( // Check if thumbnail_url exists
+                    // If thumbnail_url exists, display the Image component
+                    <Image
+                      src={item.thumbnail_url}
+                      alt=""
+                      width={36}
+                      height={36}
+                    />
+                  ) : (
+                    // If thumbnail_url doesn't exist, display the fallback <p> tag
+                    <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
+                      {item.title.at(0)?.toUpperCase()}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col justify-center ml-4 w-full">
                   <div className="flex flex-row justify-between items-center">
