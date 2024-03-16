@@ -210,6 +210,12 @@ const Chat = ({
     setIsPrivacyPolicyModalOpen(true);
   };
 
+  const [pinMessageVisible, setPinMessageVisible] = useState(true); // State to control visibility of pinned message
+
+  const handlePinClose = () => {
+    setPinMessageVisible(false); // Function to hide pinned message when close button is clicked
+  };
+
   const menu = (
     <div className="mb-4">
       <Menu>
@@ -993,16 +999,43 @@ const Chat = ({
         mobileStatus == true ? "" : "max-mlg:hidden"
       }`}
     >
-      <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg fixed gap-3 justify-between pl-6 rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md">
-        <p className="mt-3 font-nasalization text-[#FFF] max-w-[880px]">
-          {chatTitle.length < 30
-            ? chatTitle.slice(0, 30)
-            : chatTitle.slice(0, 30).concat("...")}
-        </p>
-        <div className="rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
-          <Image alt="" width={24} height={24} src={"svg/info.svg"} />
+      <div className="flex flex-col justify-between w-full">
+        <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg fixed gap-3 justify-between pl-6 rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md">
+          <p className="mt-3 font-nasalization text-[#FFF] max-w-[880px]">
+            {chatTitle.length < 30
+              ? chatTitle.slice(0, 30)
+              : chatTitle.slice(0, 30).concat("...")}
+          </p>
+          <div className="rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
+            <Image alt="" width={24} height={24} src={"svg/info.svg"} />
+          </div>
+        </div>
+
+        <div
+          className={`flex flex-row justify-between items-center bg-[rgba(39,45,51,0.70)] rounded-3xl p-3 ${
+            pinMessageVisible ? "" : "hidden"
+          }`}
+        >
+          <p className="text-white font-semibold">
+            Pinned message: Your pinned message here
+          </p>
+          <button className="text-white" onClick={() => handlePinClose()}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 1a9 9 0 100 18 9 9 0 000-18zm4.95 5.05a.75.75 0 010 1.06L11.06 10l3.89 3.89a.75.75 0 11-1.06 1.06L10 11.06l-3.89 3.89a.75.75 0 01-1.06-1.06L8.94 10 5.05 6.11a.75.75 0 011.06-1.06L10 8.94l3.89-3.89a.75.75 0 011.06 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
         </div>
       </div>
+
       <div
         className="flex flex-col flex-1 overflow-y-auto w-full pt-[60px] max-msm:pt-5"
         ref={req_qa_box}

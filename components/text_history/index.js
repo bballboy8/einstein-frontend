@@ -7,6 +7,86 @@ import { Tabs, Tab, Tooltip } from "@nextui-org/react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import ReactMarkDown from "../Markdown";
 import { apiURL } from "@/config";
+import { useDisclosure } from "@nextui-org/react";
+
+const ContextMenu = ({ position, onClose }) => {
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [onClose]);
+
+  const handlePinMessage = () => {
+    console.log("Pin Message clicked");
+    onClose();
+  };
+
+  const handleReply = () => {
+    console.log("Reply clicked");
+    onClose();
+  };
+
+  const handleDeleteChat = () => {
+    console.log("Delete Chat clicked");
+    onClose();
+  };
+
+  return (
+    <div
+      ref={menuRef}
+      className="absolute z-10  border-gray-300 rounded shadow"
+      style={{ top: position.y, left: position.x }}
+    >
+      <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
+        <div
+          className="flex gap-3.5 font-nasalization"
+          onClick={handlePinMessage}
+        >
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/713fcfb81569259aa416af0897559d00d95a5a988a06f5f343ddf7fbab0be089?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
+            className="shrink-0 aspect-square w-[19px]"
+          />
+          Pin Message
+        </div>
+        <hr className="border-t border-white opacity-20 my-1" />
+        <div
+          className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
+          onClick={handleReply}
+        >
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/90b7eeeb6bf39af11ebb11cb9ec49d25a1ca4ad8248115a41ea1e336ff1f80dd?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
+            className="shrink-0 self-start aspect-[1.14] fill-stone-300 w-[17px]"
+          />
+          Reply
+        </div>
+        <hr className="border-t border-white opacity-20 my-1" />
+        <div
+          className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "
+          onClick={handleDeleteChat}
+        >
+          <img
+            loading="lazy"
+            src="https://cdn.builder.io/api/v1/image/assets/TEMP/6e27d9edb44a4b1cc6c6733ac25ffa0e13bd9f56222deb91bf014d92c06f39d5?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
+            className="shrink-0 w-5 aspect-[0.95]"
+          />
+          Delete Chat
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Text_History = ({
   data,
@@ -40,6 +120,17 @@ const Text_History = ({
   const [editingMessage, setEditingMessage] = useState("");
   const [editModeIndex, setEditModeIndex] = useState(-1);
   const textareaRef = useRef(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState(null); // State to store context menu position
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Function to handle right-click on user messages
+  const handleContextMenu = (e, index) => {
+    e.preventDefault();
+    if (e.type === "contextmenu" && e.clientX !== 0 && e.clientY !== 0) {
+      // Only set context menu position on right-click
+      setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    }
+  };
 
   const enterEditMode = (message) => {
     setEditingMessage(message);
@@ -246,7 +337,10 @@ const Text_History = ({
               </div>
             </div>
           ) : (
-            <div className="flex flex-wrap flex-row mt-4">
+            <div
+              className="flex flex-wrap flex-row mt-4"
+              onContextMenu={(e) => handleContextMenu(e, index)}
+            >
               <Tooltip
                 content={<p className="text-[#FFF]">Edit</p>}
                 showArrow
@@ -297,7 +391,13 @@ const Text_History = ({
           )}
         </div>
       ) : null}
-
+      {contextMenuPosition && data.role === "user" && (
+        <ContextMenu
+          position={contextMenuPosition}
+          onClose={() => setContextMenuPosition(null)}
+          // Add any necessary props or actions for the context menu component
+        />
+      )}
       {data.role == "loading" ? (
         <div className="flex flex-row justify-center mb-2">
           <div className="w-[100px] bg-[#23272B] rounded-[20px] mt-4">
