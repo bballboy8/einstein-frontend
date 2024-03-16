@@ -174,6 +174,8 @@ const Chat = ({
   setHistorySideData,
   setChatHistoryID,
   setChatTitle,
+  chatSideThumbnail,
+  setChatSideThumbnail,
   chatTitle,
   mobileStatus,
   imageModel,
@@ -529,6 +531,7 @@ const Chat = ({
                 title: value,
                 bot: response.data.data,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -558,6 +561,7 @@ const Chat = ({
                 title: value,
                 bot: response.data.data,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -590,6 +594,7 @@ const Chat = ({
                 title: value,
                 bot: response.data.data,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -619,6 +624,7 @@ const Chat = ({
                 title: value,
                 bot: response.data.data,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -648,6 +654,7 @@ const Chat = ({
                 title: value,
                 bot: response.data.data,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -803,6 +810,8 @@ const Chat = ({
               }
             });
             console.log(imgResponseData);
+            console.log(response);
+            console.log(response.data);
             setImgHistory(imgResponseData);
             setImgHistoryID(response.data.id);
             setHistorySideData([
@@ -810,6 +819,7 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -844,6 +854,7 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);
@@ -877,6 +888,7 @@ const Chat = ({
                 id: response.data.id,
                 title: value,
                 date: response.data.date,
+                thumbnail_url: response.data.thumbnail_url,
               },
               ...historySideData,
             ]);

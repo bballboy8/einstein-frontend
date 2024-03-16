@@ -256,9 +256,20 @@ const HistorySider = ({
               onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
             >
               <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full mt-4 flex flex-row items-center justify-center">
-                <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
-                  {item.title.at(0)?.toUpperCase()}
-                </p>
+                {item.thumbnail_url ? ( // Check if thumbnail_url exists
+                  // If thumbnail_url exists, display the Image component
+                  <Image
+                    src={item.thumbnail_url}
+                    alt=""
+                    width={36}
+                    height={36}
+                  />
+                ) : (
+                  // If thumbnail_url doesn't exist, display the fallback <p> tag
+                  <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
+                    {item.title.at(0)?.toUpperCase()}
+                  </p>
+                )}
               </div>
               <div className="flex flex-1 flex-col ml-4 w-full">
                 <div className="flex flex-row justify-between items-center">
@@ -308,9 +319,20 @@ const HistorySider = ({
             >
               <div className="flex flex-row justify-center w-full">
                 <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full flex flex-row items-center justify-center">
-                  <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
-                    {item.title.at(0)?.toUpperCase()}
-                  </p>
+                  {item.thumbnail_url ? ( // Check if thumbnail_url exists
+                    // If thumbnail_url exists, display the Image component
+                    <Image
+                      src={item.thumbnail_url}
+                      alt=""
+                      width={36}
+                      height={36}
+                    />
+                  ) : (
+                    // If thumbnail_url doesn't exist, display the fallback <p> tag
+                    <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
+                      {item.title.at(0)?.toUpperCase()}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col justify-center ml-4 w-full">
                   <div className="flex flex-row justify-between items-center">
