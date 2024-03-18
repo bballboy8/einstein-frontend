@@ -41,12 +41,14 @@ const PrivacyPolicyContent = () => {
       <div className="modal-section">
         <h3 className="modal-subheading">Introduction</h3>
         <p>
+        {`
           Einstein AI ("Einstein", "we", "us", or "our") respects the privacy of
           its users ("user", "you", or "your") and is committed to protecting
           your personal information. This Privacy Policy outlines our practices
           regarding the collection, use, and disclosure of your information
           through the use of our Einstein AI application ("Application") and any
           of our services (collectively, "Services").
+        `}
         </p>
       </div>
 
@@ -98,6 +100,7 @@ const PrivacyPolicyContent = () => {
       <div className="modal-section">
         <h3 className="modal-subheading">Limitation of Liability</h3>
         <p>
+        {`
           Einstein AI provides its Services "as is" and makes no representations
           or warranties of any kind, express or implied, as to the Services'
           operation or the information, content, materials, or products included
@@ -108,13 +111,16 @@ const PrivacyPolicyContent = () => {
           any kind arising from the use of the Services, including, but not
           limited to direct, indirect, incidental, punitive, and consequential
           damages.
+        `}
         </p>
         <p>
+        {`
           Under no circumstances will Einstein AI be liable for any loss or
           damage caused by your reliance on information obtained through the
           Services or caused by the user's conduct. Einstein AI does not assume
           any responsibility for errors or omissions in any content or
           information provided within the Services.
+        `}
         </p>
         <p>
           By using the Einstein AI Services, you expressly agree that your use
