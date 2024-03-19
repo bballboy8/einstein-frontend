@@ -9,7 +9,14 @@ import ReactMarkDown from "../Markdown";
 import { apiURL } from "@/config";
 import { useDisclosure } from "@nextui-org/react";
 
-const ContextMenu = ({ position, onClose }) => {
+const ContextMenu = ({
+  position,
+  onClose,
+  index,
+  chatHistroyID,
+  msgIndex,
+  setPinnedMessageIndex,
+}) => {
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -27,16 +34,31 @@ const ContextMenu = ({ position, onClose }) => {
   }, [onClose]);
 
   const handlePinMessage = () => {
-    console.log("Pin Message clicked");
+    let data = JSON.stringify({
+      id: chatHistroyID,
+      index: index,
+      msgIndex: msgIndex,
+    });
+
+    axios
+      .post(`${apiURL}/ai/updatePinnedMessage`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          setPinnedMessageIndex(msgIndex, index);
+        }
+      });
+
     onClose();
   };
 
-  const handleReply = () => {
+  const handleReply = (index, chatHistroyID) => {
     console.log("Reply clicked");
     onClose();
   };
 
-  const handleDeleteChat = () => {
+  const handleDeleteChat = (index, chatHistroyID) => {
     console.log("Delete Chat clicked");
     onClose();
   };
@@ -50,7 +72,7 @@ const ContextMenu = ({ position, onClose }) => {
       <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
         <div
           className="flex gap-3.5 font-nasalization"
-          onClick={handlePinMessage}
+          onClick={() => handlePinMessage()}
         >
           <img
             loading="lazy"
@@ -62,7 +84,7 @@ const ContextMenu = ({ position, onClose }) => {
         <hr className="border-t border-white opacity-20 my-1" />
         <div
           className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
-          onClick={handleReply}
+          onClick={() => handleReply()}
         >
           <img
             loading="lazy"
@@ -74,7 +96,7 @@ const ContextMenu = ({ position, onClose }) => {
         <hr className="border-t border-white opacity-20 my-1" />
         <div
           className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "
-          onClick={handleDeleteChat}
+          onClick={() => handleDeleteChat()}
         >
           <img
             loading="lazy"
@@ -93,6 +115,7 @@ const Text_History = ({
   chatHistory,
   chatHistroyID,
   id,
+  msgIndex,
   index,
   setTabSelected,
   loading,
@@ -104,6 +127,10 @@ const Text_History = ({
   type,
   setBlur,
   blur,
+  setPinnedMessageText,
+  setPinnedMessageIndex,
+  setPinnedMessageMsgIndex,
+  setPinnedMessageMsgType,
 }) => {
   const [copyStatus, setCopyStatus] = useState(false);
   const { textStatus, setTextStatus } = useModelStatus();
@@ -122,13 +149,17 @@ const Text_History = ({
   const textareaRef = useRef(null);
   const [contextMenuPosition, setContextMenuPosition] = useState(null); // State to store context menu position
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [contextedMenuIndex, setContextedMenuIndex] = useState();
 
   // Function to handle right-click on user messages
   const handleContextMenu = (e, index) => {
     e.preventDefault();
+
     if (e.type === "contextmenu" && e.clientX !== 0 && e.clientY !== 0) {
       // Only set context menu position on right-click
+
       setContextMenuPosition({ x: e.clientX, y: e.clientY });
+      setContextedMenuIndex(index);
     }
   };
 
@@ -154,15 +185,16 @@ const Text_History = ({
     setEditModeIndex(-1);
   };
 
-  const submitEdit = (index) => {
-    console.log("Submit Edit CLicked! now call api!");
+  const submitEdit = (index, msgIndex) => {
+    console.log("Submit Edit Clicked! Now call API!");
     const updatedChatHistory = [...chatHistory];
-    updatedChatHistory[index].content = editingMessage;
-    updatedChatHistory.splice(index + 1); // Remove messages after the edited message
+    updatedChatHistory[msgIndex][index].content = editingMessage;
+    updatedChatHistory[msgIndex].splice(index + 1); // Remove messages after the edited message
+    updatedChatHistory.splice(msgIndex + 1); // Remove messages after the edited message
 
     let pasthistory = [];
-    updatedChatHistory.map((item, index) => {
-      let data = item;
+    updatedChatHistory.forEach((item) => {
+      let data = [...item]; // Create a shallow copy of the item
       pasthistory.push(data);
     });
 
@@ -174,22 +206,33 @@ const Text_History = ({
       userID: localStorage.getItem("userID"),
     };
 
-    updatedChatHistory.push({ role: "loading" });
+    // Add loading message to indicate API call is in progress
+    updatedChatHistory[msgIndex].push({ role: "loading" });
     setChatHistory(updatedChatHistory);
 
+    if (
+      updatedChatHistory[msgIndex][index].hasOwnProperty("pinned") &&
+      updatedChatHistory[msgIndex][index].pinned === true
+    ) {
+      console.log("piinned message: ");
+      // The key "pinned" exists and its value is true
+      onSetPinnedMessageIndex(msgIndex, index);
+    }
+
     // Mocking API call, replace it with your actual API call
-    setTimeout(() => {
-      axios
-        .post(`${apiURL}/ai/edit`, sumData, {
-          headers: { "Content-Type": "application/json" },
-        })
-        .then((response) => {
-          let a = [...pasthistory];
-          a.push(response.data.data);
-          setLoading(false);
-          setChatHistory(a);
-        });
-    }, 2000); // Mock API response time (2 seconds)
+    axios
+      .post(`${apiURL}/ai/edit`, sumData, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        setLoading(false);
+        // Remove loading message when response is received
+        let updatedChatHistory = response.data.data;
+        setChatHistory(updatedChatHistory);
+      })
+      .catch((error) => {
+        console.error("Error editing message:", error);
+      });
   };
 
   const getDataByType = (id, i) => {
@@ -223,14 +266,14 @@ const Text_History = ({
     }
   }, []);
 
-  const Summarize = (data, id) => {
+  const Summarize = (data, msgIndex, index) => {
     axios
       .post(`${apiURL}/ai/summarize`, data, {
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         let a = [...chatHistory];
-        a[id]["content"] = response.data.data;
+        a[msgIndex][index]["content"] = response.data.data;
         setLoading(false);
         setChatHistory(a);
       });
@@ -299,8 +342,16 @@ const Text_History = ({
     setBlur(false);
   };
 
+  const onSetPinnedMessageIndex = (msgIndex, index) => {
+    setPinnedMessageMsgIndex(msgIndex);
+    setPinnedMessageIndex(index);
+    setPinnedMessageText(chatHistory[msgIndex][index].content);
+    setPinnedMessageMsgType("text");
+  };
+
   return (
     <div key={index} className="flex flex-col w-full">
+      {/* user compannent */}
       {data.role === "user" ? (
         <div className={`flex justify-end w-full mb-4 pr-5 max-mxl:pr-0`}>
           {editModeIndex === index ? (
@@ -322,7 +373,7 @@ const Text_History = ({
                     className="px-2 py-1 whitespace-nowrap rounded-md bg-blue-500 hover:bg-blue-700 text-white mr-2"
                     onClick={() => {
                       handleLoading(); // Call handleLoading to handle loading state
-                      submitEdit(index);
+                      submitEdit(index, msgIndex);
                     }}
                   >
                     Submit & Save
@@ -391,13 +442,21 @@ const Text_History = ({
           )}
         </div>
       ) : null}
-      {contextMenuPosition && data.role === "user" && (
+
+      {/* popup menue */}
+      {contextMenuPosition && (
         <ContextMenu
           position={contextMenuPosition}
           onClose={() => setContextMenuPosition(null)}
+          index={index}
+          chatHistroyID={chatHistroyID}
+          msgIndex={msgIndex}
+          setPinnedMessageIndex={onSetPinnedMessageIndex}
           // Add any necessary props or actions for the context menu component
         />
       )}
+
+      {/* loader */}
       {data.role == "loading" ? (
         <div className="flex flex-row justify-center mb-2">
           <div className="w-[100px] bg-[#23272B] rounded-[20px] mt-4">
@@ -409,6 +468,8 @@ const Text_History = ({
           </div>
         </div>
       ) : null}
+
+      {/* assistant chat */}
       {data.role != "assistant" ? null : (
         <div
           className={`flex flex-col w-full items-start ${
@@ -425,16 +486,18 @@ const Text_History = ({
                 onSelectionChange={setTabSelected}
                 onClick={(e) => {
                   let pasthistory = [];
-                  chatHistory.slice(0, index).map((item, index) => {
-                    let data = removeTypeField(item);
-                    pasthistory.push(data);
+                  chatHistory.slice(0, index).map((item, i) => {
+                    item.map((msg, j) => {
+                      let data = removeTypeField(msg);
+                      pasthistory.push(data);
+                    });
                   });
                   let sumData = {
                     old_type: type,
                     new_type: e.target.outerText,
                     history: pasthistory,
                     id: chatHistroyID,
-                    number: (index - 1) / 2,
+                    number: msgIndex,
                     userID: localStorage.getItem("userID"),
                   };
                   setSwitchStatus(true);
@@ -452,7 +515,7 @@ const Text_History = ({
                     })
                     .then((response) => {
                       if (response.data.data.indexOf(tabSelected) == -1)
-                        Summarize(sumData, index);
+                        Summarize(sumData, msgIndex, index);
                       else getDataByType(chatHistroyID, index);
                     });
                 }}
@@ -546,6 +609,7 @@ const Text_History = ({
             <div className="flex flex-col max-w-max mr-[138px] max-mxl:mr-[220px] max-xl:mr-[100px] max-msm:mr-12 mb-4">
               <div
                 className={`mt-4 bg-[#23272B] max-w-max rounded-[20px] py-3 px-6`}
+                onContextMenu={(e) => handleContextMenu(e, index)}
               >
                 <ReactMarkDown data={data.content} />
               </div>
