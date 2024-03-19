@@ -37,15 +37,47 @@ const HistorySider = ({
   const { toggleStatus, setToggleStatus } = useModelStatus();
   const { newChatData, setNewChatData } = useNewChat([]);
   const [generateType, setGenerateType] = useState(0);
+  const [pinnedChatId, setPinnedChatId] = useState(0);
+  const [pinnedChatType, setPinnedChatType] = useState("");
+  const [pinnedChatStatus, setPinnedChatStatus] = useState(false);
   const [id, setID] = useState();
 
-  const displayContextMenu = (event, id) => {
+  const displayContextMenu = (event, id, chatId, type, status) => {
     contextMenu.show({
       id,
       event,
     });
+    setPinnedChatId(chatId);
+    setPinnedChatType(type);
+    setPinnedChatStatus(status);
+  };
+  const contextMenuStyles = {
+    // Example custom styles
+    border: "none",
+    background: "transparent",
+    boxShadow: "unset",
   };
 
+  const orderPinnedChats = (updatedNewChat) => {
+    const updatedNewChat1 = updatedNewChat.map((chat) => {
+      if (!chat.hasOwnProperty("pinned")) {
+        chat.pinned = false;
+      }
+      return chat;
+    });
+
+    const sortedChats = updatedNewChat1.sort((a, b) => {
+      if (a.pinned && !b.pinned) {
+        return -1; // a comes first
+      }
+      if (!a.pinned && b.pinned) {
+        return 1; // b comes first
+      }
+      return 0; // maintain the same order
+    });
+
+    return sortedChats;
+  };
   const handleItemClick = ({ event, props, triggerEvent, data }) => {
     console.log(event, props, triggerEvent, data);
   };
@@ -62,7 +94,7 @@ const HistorySider = ({
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
-        setHistorySideData(response.data.data);
+        setHistorySideData(orderPinnedChats(response.data.data));
       });
   };
 
@@ -77,12 +109,11 @@ const HistorySider = ({
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
-        setHistorySideData(response.data.data);
+        setHistorySideData(orderPinnedChats(response.data.data));
       });
   };
 
   const search = (filterData) => {
-    console.log(filterData);
     let data = {
       searchString: filterData,
       id: localStorage.getItem("userID"),
@@ -92,13 +123,13 @@ const HistorySider = ({
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
-        console.log(response.data.data);
         setNewChatData(response.data.data);
       });
   };
 
   useEffect(() => {
     console.log("---> this useEffect called!");
+    console.log("historySideData", historySideData);
 
     setNewChatData(historySideData);
   }, [historySideData]);
@@ -109,6 +140,59 @@ const HistorySider = ({
     if (imageModel == false) getHistoryData();
     else getImgSideData();
   }, [imageModel]);
+
+  const handlePinChat = () => {
+    if (pinnedChatId !== 0 && pinnedChatType !== "") {
+      let type = "ai";
+      if (pinnedChatType == "image") {
+        type = "img";
+      }
+      let data = JSON.stringify({
+        id: pinnedChatId,
+      });
+      axios
+        .post(`${apiURL}/${type}/updatePinnedChat`, data, {
+          headers: { "Content-Type": "application/json" },
+        })
+        .then((response) => {
+          if (response.status == 200) {
+            newChatData.forEach((obj) => {
+              if (obj.id === pinnedChatId) {
+                obj.pinned = true;
+              }
+            });
+            const sortedChat = orderPinnedChats(newChatData);
+            setNewChatData(sortedChat);
+          }
+        });
+    }
+  };
+  const handleUnpinChat = () => {
+    if (pinnedChatId !== 0 && pinnedChatType !== "") {
+      let type = "ai";
+      if (pinnedChatType == "image") {
+        type = "img";
+      }
+      let data = JSON.stringify({
+        id: pinnedChatId,
+      });
+      axios
+        .post(`${apiURL}/${type}/unPinnedChat`, data, {
+          headers: { "Content-Type": "application/json" },
+        })
+        .then((response) => {
+          if (response.status == 200) {
+            newChatData.forEach((obj) => {
+              if (obj.id === pinnedChatId) {
+                obj.pinned = false;
+              }
+            });
+            const sortedChat = orderPinnedChats(newChatData);
+            setNewChatData(sortedChat);
+          }
+        });
+    }
+  };
 
   return (
     <div
@@ -253,12 +337,31 @@ const HistorySider = ({
                 // setMobileStatus(true);
                 setClickChat(true);
               }}
-              onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
+              onContextMenu={(e) =>
+                displayContextMenu(
+                  e,
+                  "context-menu-basic",
+                  item.id,
+                  "text",
+                  item.pinned
+                )
+              }
             >
               <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full mt-4 flex flex-row items-center justify-center">
-                <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
-                  {item.title.at(0)?.toUpperCase()}
-                </p>
+                {item.thumbnail_url ? ( // Check if thumbnail_url exists
+                  // If thumbnail_url exists, display the Image component
+                  <Image
+                    src={item.thumbnail_url}
+                    alt=""
+                    width={36}
+                    height={36}
+                  />
+                ) : (
+                  // If thumbnail_url doesn't exist, display the fallback <p> tag
+                  <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
+                    {item.title.at(0)?.toUpperCase()}
+                  </p>
+                )}
               </div>
               <div className="flex flex-1 flex-col ml-4 w-full">
                 <div className="flex flex-row justify-between items-center">
@@ -280,9 +383,69 @@ const HistorySider = ({
                 </div>
                 <div className="mt-4 border-b border-[#565656]"></div>
               </div>
-              <Menu id="context-menu-basic" animation={false}>
-                <Item onClick={handleItemClick}>Delete</Item>
+              <Menu
+                id="context-menu-basic"
+                animation={false}
+                style={contextMenuStyles}
+              >
+                {/* <div className="absolute z-10 "> */}
+                <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
+                  {pinnedChatStatus ? (
+                    <div
+                      className="flex gap-3.5 font-nasalization"
+                      onClick={() => handleUnpinChat()}
+                    >
+                      <img
+                        loading="lazy"
+                        src="svg/pin.svg"
+                        className="shrink-0 aspect-square w-[19px]"
+                      />
+                      <img
+                        loading="lazy"
+                        src="/Close.png"
+                        className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[32px] mt-[1px]"
+                      />
+                      Unpinned
+                    </div>
+                  ) : (
+                    <div
+                      className="flex gap-3.5 font-nasalization"
+                      onClick={() => handlePinChat()}
+                    >
+                      <img
+                        loading="lazy"
+                        src="svg/pin.svg"
+                        className="shrink-0 aspect-square w-[19px]"
+                      />
+                      Pinned
+                    </div>
+                  )}
+
+                  <hr className="border-t border-white opacity-20 my-1" />
+
+                  <div
+                    className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "
+                    onClick={handleItemClick}
+                  >
+                    <img
+                      loading="lazy"
+                      src="svg/trash.svg"
+                      className="shrink-0 w-5 aspect-[0.95]"
+                    />
+                    Delete Chat
+                  </div>
+                </div>
+                {/* </div> */}
               </Menu>
+              {item.pinned && (
+                <>
+                  <img
+                    loading="lazy"
+                    src="svg/pin.svg"
+                    className="shrink-0 aspect-square w-[19px]"
+                  />
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -304,13 +467,32 @@ const HistorySider = ({
                 // setMobileStatus(true);
                 setClickChat(true);
               }}
-              onContextMenu={(e) => displayContextMenu(e, "context-menu-basic")}
+              onContextMenu={(e) =>
+                displayContextMenu(
+                  e,
+                  "context-menu-basic",
+                  item.id,
+                  "image",
+                  item.pinned
+                )
+              }
             >
               <div className="flex flex-row justify-center w-full">
                 <div className="min-w-9 h-9 max-msm:w-12 max-msm:h-12 bg-radial-gradient rounded-full flex flex-row items-center justify-center">
-                  <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
-                    {item.title.at(0)?.toUpperCase()}
-                  </p>
+                  {item.thumbnail_url ? ( // Check if thumbnail_url exists
+                    // If thumbnail_url exists, display the Image component
+                    <Image
+                      src={item.thumbnail_url}
+                      alt=""
+                      width={36}
+                      height={36}
+                    />
+                  ) : (
+                    // If thumbnail_url doesn't exist, display the fallback <p> tag
+                    <p className="text-xl text-[#E9ECEF] font-helvetica font-medium leading-normal">
+                      {item.title.at(0)?.toUpperCase()}
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col justify-center ml-4 w-full">
                   <div className="flex flex-row justify-between items-center">
@@ -325,11 +507,75 @@ const HistorySider = ({
                   </div>
                 </div>
               </div>
-              <Menu id="context-menu-basic" animation={false}>
+              <Menu
+                id="context-menu-basic"
+                animation={false}
+                style={contextMenuStyles}
+              >
+                {/* <div className="absolute z-10 "> */}
+                <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
+                  {pinnedChatStatus ? (
+                    <div
+                      className="flex gap-3.5 font-nasalization"
+                      onClick={() => handleUnpinChat()}
+                    >
+                      <img
+                        loading="lazy"
+                        src="svg/pin.svg"
+                        className="shrink-0 aspect-square w-[19px]"
+                      />
+                      <img
+                        loading="lazy"
+                        src="/Close.png"
+                        className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[32px] mt-[1px]"
+                      />
+                      Unpinned
+                    </div>
+                  ) : (
+                    <div
+                      className="flex gap-3.5 font-nasalization"
+                      onClick={() => handlePinChat()}
+                    >
+                      <img
+                        loading="lazy"
+                        src="svg/pin.svg"
+                        className="shrink-0 aspect-square w-[19px]"
+                      />
+                      Pinned
+                    </div>
+                  )}
+
+                  <hr className="border-t border-white opacity-20 my-1" />
+
+                  <div
+                    className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "
+                    onClick={handleItemClick}
+                  >
+                    <img
+                      loading="lazy"
+                      src="svg/trash.svg"
+                      className="shrink-0 w-5 aspect-[0.95]"
+                    />
+                    Delete
+                  </div>
+                </div>
+                {/* </div> */}
+              </Menu>
+              {/* <Menu id="context-menu-basic" animation={false}>
+                <Item onClick={handleItemClick}>Pinned</Item>
                 <Item onClick={handleItemClick}>Copy</Item>
                 <Item onClick={handleItemClick}>Archive</Item>
                 <Item onClick={handleItemClick}>Delete</Item>
-              </Menu>
+              </Menu> */}
+              {item.pinned && (
+                <>
+                  <img
+                    loading="lazy"
+                    src="svg/pin.svg"
+                    className="shrink-0 aspect-square w-[19px]"
+                  />
+                </>
+              )}
             </div>
           ))}
         </div>

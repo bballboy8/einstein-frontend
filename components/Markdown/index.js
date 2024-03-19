@@ -10,8 +10,8 @@ const ReactMarkDown = ({ data }) => {
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeMathjax, rehypeRaw]}
-      className="user-prompt" components=
-      {{
+      className="user-prompt"
+      components={{
         code({ inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
           if (!inline && match) {
@@ -42,7 +42,7 @@ const ReactMarkDown = ({ data }) => {
                 borderCollapse: "collapse",
                 width: "100%",
                 fontFamily: "Arial, sans-serif",
-                fontSize: "14px"
+                fontSize: "14px",
               }}
               {...props}
             >
@@ -71,7 +71,7 @@ const ReactMarkDown = ({ data }) => {
                 padding: "8px",
                 border: "1px solid #ddd",
                 fontWeight: "bold",
-                textAlign: "left"
+                textAlign: "left",
               }}
               {...props}
             >
@@ -135,7 +135,7 @@ const ReactMarkDown = ({ data }) => {
         //     </li>
         //   );
         // }
-      }}  
+      }}
     >
       {data}
     </ReactMarkdown>

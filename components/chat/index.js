@@ -211,9 +211,65 @@ const Chat = ({
   const req_qa_box = useRef(null);
   const [isPrivacyPolicyModalOpen, setIsPrivacyPolicyModalOpen] =
     useState(false);
+  const pinnedMessageRef = useRef(null);
 
+  const [pinnedMessageMsgIndex, setPinnedMessageMsgIndex] = useState(0);
+  const [pinnedMessageMsgType, setPinnedMessageMsgType] = useState("");
+  const [pinnedMessageIndex, setPinnedMessageIndex] = useState(0);
+  const [pinnedMessageText, setPinnedMessageText] = useState("");
+  const [pinMessageVisible, setPinMessageVisible] = useState(false); // State to control visibility of pinned message
+  const OnSetPinnedMessageMsgIndex = (index) => {
+    setPinnedMessageMsgIndex(index);
+  };
+
+  const OnSetPinnedMessageMsgType = (value) => {
+    setPinnedMessageMsgType(value);
+  };
+
+  const OnSetPinnedMessageIndex = (index) => {
+    setPinnedMessageIndex(index);
+  };
+
+  const OnSetPinnedMessageText = (text) => {
+    if (text !== null && text !== "") {
+      setPinMessageVisible(true);
+      setPinnedMessageText(text);
+    } else {
+      setPinMessageVisible(false);
+      setPinnedMessageText(text);
+    }
+  };
   const handlePrivacyPolicyClick = () => {
     setIsPrivacyPolicyModalOpen(true);
+  };
+
+  const handlePinClose = () => {
+    let data = JSON.stringify({
+      id: chatHistroyID,
+      index: pinnedMessageIndex,
+      msgIndex: pinnedMessageMsgIndex,
+    });
+    let type = "ai";
+
+    if (pinnedMessageMsgType == "image") {
+      data = JSON.stringify({
+        id: imgHistoryID,
+        index: pinnedMessageIndex,
+        msgIndex: pinnedMessageMsgIndex,
+      });
+      type = "img";
+    }
+    axios
+      .post(`${apiURL}/${type}/unPinnedMessage`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          setPinMessageVisible(false);
+        }
+      });
+
+    // Function to hide pinned message when close button is clicked
   };
 
   const menu = (
@@ -414,8 +470,11 @@ const Chat = ({
       if (chatHistroyID != "") {
         setID("");
         GetHistoryDataByID(chatHistroyID);
+        setPinMessageVisible(false);
       }
     } else {
+      setPinMessageVisible(false);
+
       if (imgHistoryID != "") {
         setID("");
         GetHistoryDataByID(imgHistoryID);
@@ -433,16 +492,20 @@ const Chat = ({
         })
         .then((response) => {
           let a = [];
-          response.data.data.history.map((item, index) => {
-            item.map((dt, i) => {
-              console.log(dt.type);
-              if (dt.role == "user" || dt.type == response.data.data.type)
-                a.push(dt);
+
+          response.data.data.history.forEach((item, msgIndex) => {
+            item.forEach((message, index) => {
+              if (message.pinned) {
+                setPinMessageVisible(true);
+                setPinnedMessageMsgIndex(msgIndex);
+                setPinnedMessageIndex(index);
+                setPinnedMessageText(message.content);
+              }
             });
           });
           setModelType(response.data.data.type);
           setType(response.data.data.type);
-          setChatHistory(a);
+          setChatHistory(response.data.data.history);
         });
     } else {
       console.log("start img id data");
@@ -451,22 +514,34 @@ const Chat = ({
           headers: { "Content-Type": "application/json" },
         })
         .then((response) => {
-          let a = [];
-          response.data.data.history.map((data, index) => {
-            data.map((dt, i) => {
-              if (dt.role == "user" || dt.type == response.data.data.type)
-                a.push(dt);
+          // let a = [];
+          // response.data.data.history.map((data, index) => {
+          //   data.map((dt, i) => {
+          //     if (dt.role == "user" || dt.type == response.data.data.type)
+          //       a.push(dt);
+          //   });
+          // });
+
+          response.data.data.history.forEach((item, msgIndex) => {
+            item.forEach((message, index) => {
+              if (message.pinned) {
+                setPinMessageVisible(true);
+                setPinnedMessageMsgIndex(msgIndex);
+                setPinnedMessageIndex(index);
+                setPinnedMessageText(message.content);
+              }
             });
           });
-          console.log(a);
+
           setImgModelType(response.data.data.type);
-          setImgHistory(a);
+          setImgHistory(response.data.data.history);
         });
     }
   };
 
-  function removeTypeField(obj) {
+  function removeTypeAndPinnedField(obj) {
     delete obj.type;
+    delete obj.pinned;
     return obj;
   }
 
@@ -489,11 +564,12 @@ const Chat = ({
   };
 
   const TextGenereate = () => {
+    console.log("text geenration start");
     setSwitchStatus(false);
     setChatStatus(true);
     let textResponseData = [];
     let new_history = [...chatHistory];
-    new_history.push({ role: "user", content: value }, { role: "loading" });
+    new_history.push([{ role: "user", content: value }, { role: "loading" }]);
     setChatHistory(new_history);
     if (chatHistroyID == "") {
       let data = JSON.stringify({
@@ -510,28 +586,35 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                bot: response.data.data,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+              setHistorySideData([
+                {
+                  id: response.data.id,
+                  title: value,
+                  bot: response.data.data,
+                  date: response.data.date,
+                  thumbnail_url: response.data.thumbnail_url,
+                },
+                ...historySideData,
+              ]);
+            }
           });
       } else if (selected == "GPT-3.5") {
         axios
@@ -539,28 +622,35 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                bot: response.data.data,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+              setHistorySideData([
+                {
+                  id: response.data.id,
+                  title: value,
+                  bot: response.data.data,
+                  date: response.data.date,
+                  thumbnail_url: response.data.thumbnail_url,
+                },
+                ...historySideData,
+              ]);
+            }
           })
           .catch((error) => {
             console.log(error);
@@ -571,28 +661,35 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                bot: response.data.data,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+              setHistorySideData([
+                {
+                  id: response.data.id,
+                  title: value,
+                  bot: response.data.data,
+                  date: response.data.date,
+                  thumbnail_url: response.data.thumbnail_url,
+                },
+                ...historySideData,
+              ]);
+            }
           });
       } else if (selected == "Mistral") {
         axios
@@ -600,28 +697,35 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                bot: response.data.data,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+              setHistorySideData([
+                {
+                  id: response.data.id,
+                  title: value,
+                  bot: response.data.data,
+                  date: response.data.date,
+                  thumbnail_url: response.data.thumbnail_url,
+                },
+                ...historySideData,
+              ]);
+            }
           });
       } else if (selected == "Perplexity") {
         axios
@@ -629,41 +733,53 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                bot: response.data.data,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+              setHistorySideData([
+                {
+                  id: response.data.id,
+                  title: value,
+                  bot: response.data.data,
+                  date: response.data.date,
+                  thumbnail_url: response.data.thumbnail_url,
+                },
+                ...historySideData,
+              ]);
+            }
           });
       }
     } else {
       let pasthistory = [];
+
       chatHistory.map((item) => {
-        let a = removeTypeField(item);
+        let a = removeTypeAndPinnedField(item);
         pasthistory.push(a);
       });
+      const newData = chatHistory.map((arr) =>
+        arr.map(({ role, content }) => ({ role, content }))
+      );
+      const flattenedArray = newData.flat();
       let data = JSON.stringify({
         prompt: value,
         id: chatHistroyID,
         type: type,
-        pasthistory: chatHistory,
+        pasthistory: flattenedArray,
         userID: localStorage.getItem("userID"),
       });
       setValue("");
@@ -673,19 +789,25 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+            }
           });
       } else if (modelType == "GPT-3.5") {
         axios
@@ -693,15 +815,25 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return { role: "assistant", content: response.data.data };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+            }
           });
       } else if (modelType == "Gemini") {
         axios
@@ -709,19 +841,25 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+            }
           });
       } else if (modelType == "Mistral") {
         axios
@@ -729,19 +867,25 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+            }
           });
       } else if (modelType == "Perplexity") {
         axios
@@ -749,19 +893,25 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            textResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
-              }
-            });
-            setChatHistory(textResponseData);
-            setChatHistoryID(response.data.id);
+            const loadingIndex = new_history.findIndex(
+              (item) => item[1].role === "loading"
+            );
+
+            if (loadingIndex !== -1) {
+              // Create a new array with the updated item
+              const updatedItem = [...new_history[loadingIndex]];
+              updatedItem[1].role = "assistant";
+              updatedItem[1].content = response.data.data;
+              updatedItem[1].type = response.data.type;
+
+              // Create a new history array with the updated item
+              const updatedHistory = [...new_history];
+              updatedHistory[loadingIndex] = updatedItem;
+
+              // Update the chat history state
+              setChatHistory(updatedHistory);
+              setChatHistoryID(response.data.id);
+            }
           });
       }
     }
@@ -772,7 +922,7 @@ const Chat = ({
     setChatStatus(true);
     console.log("Image generation start", imgHistoryID);
     let new_history = [...imgHistory];
-    new_history.push({ role: "user", content: value }, { role: "loading" });
+    new_history.push([{ role: "user", content: value }, { role: "loading" }]);
     setImgHistory(new_history);
     if (imgHistoryID == "") {
       let data = JSON.stringify({
@@ -791,28 +941,62 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            let imgResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
+            if (response.data) {
+              const loadingIndex = new_history.findIndex(
+                (item) => item[1].role === "loading"
+              );
+
+              if (loadingIndex !== -1) {
+                // Create a new array with the updated item
+                const updatedItem = [...new_history[loadingIndex]];
+                updatedItem[1].role = "assistant";
+                updatedItem[1].content = response.data.data;
+                updatedItem[1].type = response.data.type;
+
+                // Create a new history array with the updated item
+                const updatedHistory = [...new_history];
+                updatedHistory[loadingIndex] = updatedItem;
+
+                // Update the chat history state
+                setImgHistory(updatedHistory);
+                setImgHistoryID(response.data.id);
+                setHistorySideData([
+                  {
+                    id: response.data.id,
+                    title: value,
+                    date: response.data.date,
+                    thumbnail_url: response.data.thumbnail_url,
+                  },
+                  ...historySideData,
+                ]);
               }
-            });
-            console.log(imgResponseData);
-            setImgHistory(imgResponseData);
-            setImgHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            }
+
+            // let imgResponseData = new_history.map((item) => {
+            //   if (item.role === "loading") {
+            //     return {
+            //       role: "assistant",
+            //       content: response.data.data,
+            //       type: response.data.type,
+            //     };
+            //   } else {
+            //     return item;
+            //   }
+            // });
+            // console.log(imgResponseData);
+            // console.log(response);
+            // console.log(response.data);
+            // setImgHistory(imgResponseData);
+            // setImgHistoryID(response.data.id);
+            // setHistorySideData([
+            //   {
+            //     id: response.data.id,
+            //     title: value,
+            //     date: response.data.date,
+            //     thumbnail_url: response.data.thumbnail_url,
+            //   },
+            //   ...historySideData,
+            // ]);
           })
           .catch((err) => {
             console.log(err);
@@ -823,30 +1007,36 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            console.log(response.data);
-            let imgResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                  size: response.data.size,
-                };
-              } else {
-                return item;
+            if (response.data) {
+              const loadingIndex = new_history.findIndex(
+                (item) => item[1].role === "loading"
+              );
+
+              if (loadingIndex !== -1) {
+                // Create a new array with the updated item
+                const updatedItem = [...new_history[loadingIndex]];
+                updatedItem[1].role = "assistant";
+                updatedItem[1].content = response.data.data;
+                updatedItem[1].type = response.data.type;
+
+                // Create a new history array with the updated item
+                const updatedHistory = [...new_history];
+                updatedHistory[loadingIndex] = updatedItem;
+
+                // Update the chat history state
+                setImgHistory(updatedHistory);
+                setImgHistoryID(response.data.id);
+                setHistorySideData([
+                  {
+                    id: response.data.id,
+                    title: value,
+                    date: response.data.date,
+                    thumbnail_url: response.data.thumbnail_url,
+                  },
+                  ...historySideData,
+                ]);
               }
-            });
-            console.log("@#@#@#@#", imgResponseData);
-            setImgHistory(imgResponseData);
-            setImgHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            }
           })
           .catch((err) => {
             console.log(err);
@@ -857,29 +1047,36 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            console.log(response.data);
-            let imgResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                  size: response.data.size,
-                };
-              } else {
-                return item;
+            if (response.data) {
+              const loadingIndex = new_history.findIndex(
+                (item) => item[1].role === "loading"
+              );
+
+              if (loadingIndex !== -1) {
+                // Create a new array with the updated item
+                const updatedItem = [...new_history[loadingIndex]];
+                updatedItem[1].role = "assistant";
+                updatedItem[1].content = response.data.data;
+                updatedItem[1].type = response.data.type;
+
+                // Create a new history array with the updated item
+                const updatedHistory = [...new_history];
+                updatedHistory[loadingIndex] = updatedItem;
+
+                // Update the chat history state
+                setImgHistory(updatedHistory);
+                setImgHistoryID(response.data.id);
+                setHistorySideData([
+                  {
+                    id: response.data.id,
+                    title: value,
+                    date: response.data.date,
+                    thumbnail_url: response.data.thumbnail_url,
+                  },
+                  ...historySideData,
+                ]);
               }
-            });
-            setImgHistory(imgResponseData);
-            setImgHistoryID(response.data.id);
-            setHistorySideData([
-              {
-                id: response.data.id,
-                title: value,
-                date: response.data.date,
-              },
-              ...historySideData,
-            ]);
+            }
           })
           .catch((err) => {
             console.log(err);
@@ -903,19 +1100,27 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            let imgResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                };
-              } else {
-                return item;
+            if (response.data) {
+              const loadingIndex = new_history.findIndex(
+                (item) => item[1].role === "loading"
+              );
+
+              if (loadingIndex !== -1) {
+                // Create a new array with the updated item
+                const updatedItem = [...new_history[loadingIndex]];
+                updatedItem[1].role = "assistant";
+                updatedItem[1].content = response.data.data;
+                updatedItem[1].type = response.data.type;
+
+                // Create a new history array with the updated item
+                const updatedHistory = [...new_history];
+                updatedHistory[loadingIndex] = updatedItem;
+
+                // Update the chat history state
+                setImgHistory(updatedHistory);
+                setImgHistoryID(response.data.id);
               }
-            });
-            setImgHistory(imgResponseData);
-            setImgHistoryID(response.data.id);
+            }
           })
           .catch((err) => {
             console.log(err);
@@ -926,21 +1131,27 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            console.log(response);
-            let imgResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                  size: response.data.size,
-                };
-              } else {
-                return item;
+            if (response.data) {
+              const loadingIndex = new_history.findIndex(
+                (item) => item[1].role === "loading"
+              );
+
+              if (loadingIndex !== -1) {
+                // Create a new array with the updated item
+                const updatedItem = [...new_history[loadingIndex]];
+                updatedItem[1].role = "assistant";
+                updatedItem[1].content = response.data.data;
+                updatedItem[1].type = response.data.type;
+
+                // Create a new history array with the updated item
+                const updatedHistory = [...new_history];
+                updatedHistory[loadingIndex] = updatedItem;
+
+                // Update the chat history state
+                setImgHistory(updatedHistory);
+                setImgHistoryID(response.data.id);
               }
-            });
-            setImgHistory(imgResponseData);
-            setImgHistoryID(response.data.id);
+            }
           })
           .catch((err) => {
             console.log(err);
@@ -951,20 +1162,27 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            let imgResponseData = new_history.map((item) => {
-              if (item.role === "loading") {
-                return {
-                  role: "assistant",
-                  content: response.data.data,
-                  type: response.data.type,
-                  size: response.data.size,
-                };
-              } else {
-                return item;
+            if (response.data) {
+              const loadingIndex = new_history.findIndex(
+                (item) => item[1].role === "loading"
+              );
+
+              if (loadingIndex !== -1) {
+                // Create a new array with the updated item
+                const updatedItem = [...new_history[loadingIndex]];
+                updatedItem[1].role = "assistant";
+                updatedItem[1].content = response.data.data;
+                updatedItem[1].type = response.data.type;
+
+                // Create a new history array with the updated item
+                const updatedHistory = [...new_history];
+                updatedHistory[loadingIndex] = updatedItem;
+
+                // Update the chat history state
+                setImgHistory(updatedHistory);
+                setImgHistoryID(response.data.id);
               }
-            });
-            setImgHistory(imgResponseData);
-            setImgHistoryID(response.data.id);
+            }
           })
           .catch((err) => {
             console.log(err);
@@ -993,22 +1211,98 @@ const Chat = ({
     setRatio(ratioList[e.target.value]);
   };
 
+  const onClickPinnedMessage = (pinnedMessageIndex, pinnedMessageMsgIndex) => {
+    if (pinnedMessageRef.current) {
+      pinnedMessageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const OnCheckEditPinnedMessage = (msgIndex, Index, type, currentText) => {
+    if (type == "text" && pinnedMessageMsgType == "text") {
+      if (pinnedMessageMsgIndex >= msgIndex && pinnedMessageIndex > Index) {
+        setPinMessageVisible(false);
+        setPinnedMessageIndex(0);
+        setPinnedMessageMsgIndex(0);
+        setPinnedMessageMsgType(null);
+        setPinnedMessageText("");
+      } else if (
+        pinnedMessageMsgIndex == msgIndex &&
+        pinnedMessageIndex == Index
+      ) {
+        setPinnedMessageText(currentText);
+      }
+    } else {
+      console.log("pinnedMessageMsgIndex", pinnedMessageMsgIndex);
+      console.log("msgIndex", msgIndex);
+      console.log("pinnedMessageIndex", pinnedMessageIndex);
+      console.log("Index", Index);
+      if (pinnedMessageMsgIndex >= msgIndex && pinnedMessageIndex == Index) {
+        setPinMessageVisible(false);
+        setPinnedMessageIndex(0);
+        setPinnedMessageMsgIndex(0);
+        setPinnedMessageMsgType(null);
+        setPinnedMessageText("");
+      } else if (
+        pinnedMessageMsgIndex == msgIndex &&
+        pinnedMessageIndex == Index
+      ) {
+        setPinnedMessageText(currentText);
+      }
+    }
+  };
+
   return (
     <div
       className={`flex flex-1 flex-col pl-8 max-mlg:px-2 ${
         mobileStatus == true ? "" : "max-mlg:hidden"
       }`}
     >
-      <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg fixed gap-3 justify-between pl-6 rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md">
-        <p className="mt-3 font-nasalization text-[#FFF] max-w-[880px]">
-          {chatTitle.length < 30
-            ? chatTitle.slice(0, 30)
-            : chatTitle.slice(0, 30).concat("...")}
-        </p>
-        <div className="rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
-          <Image alt="" width={24} height={24} src={"svg/info.svg"} />
+      <div className="flex flex-col justify-between w-full">
+        <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg  gap-3 justify-between pl-6 rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md">
+          <p className="mt-3 font-nasalization text-[#FFF] max-w-[880px]">
+            {chatTitle.length < 30
+              ? chatTitle.slice(0, 30)
+              : chatTitle.slice(0, 30).concat("...")}
+          </p>
+          <div className="rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
+            <Image alt="" width={24} height={24} src={"svg/info.svg"} />
+          </div>
+        </div>
+
+        <div
+          className={`flex flex-row justify-between items-center p-2 pl-6  max-msm:hidden w-xl max-mlg:w-mlg border-b border-gray-600 ${
+            pinMessageVisible ? "" : "hidden"
+          }`}
+        >
+          <p
+            className="text-white font-semibold whitespace-normal"
+            onClick={() =>
+              onClickPinnedMessage(pinnedMessageIndex, pinnedMessageMsgIndex)
+            }
+          >
+            <span className="truncate inline-block max-w-[650px]">
+              <span className="text-[#0A84FF]">Pinned message:</span>{" "}
+              {pinnedMessageText}
+            </span>
+          </p>
+
+          <button className="text-white" onClick={() => handlePinClose()}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 1a9 9 0 100 18 9 9 0 000-18zm4.95 5.05a.75.75 0 010 1.06L11.06 10l3.89 3.89a.75.75 0 11-1.06 1.06L10 11.06l-3.89 3.89a.75.75 0 01-1.06-1.06L8.94 10 5.05 6.11a.75.75 0 011.06-1.06L10 8.94l3.89-3.89a.75.75 0 011.06 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
         </div>
       </div>
+
       <div
         className="flex flex-col flex-1 overflow-y-auto w-full pt-[60px] max-msm:pt-5"
         ref={req_qa_box}
@@ -1021,46 +1315,84 @@ const Chat = ({
         {chatStatus == true ? (
           imageModel == false ? (
             <div className="flex flex-col w-full max-w-[920px] mx-auto max-mxl:max-w-[900px] max-mlg:max-w-[800px] max-xl:max-w-[600px] max-msm:max-w-[360px] max-msm:mx-auto">
-              {chatHistory.map((data, index) => (
-                <Text_History
-                  key={index}
-                  data={data}
-                  chatHistory={chatHistory}
-                  chatHistroyID={chatHistroyID}
-                  id={id}
-                  index={index}
-                  setTabSelected={setTabSelected}
-                  loading={loading}
-                  setChatHistory={setChatHistory}
-                  setLoading={setLoading}
-                  setSwitchStatus={setSwitchStatus}
-                  setID={setID}
-                  tabSelected={tabSelected}
-                  type={type}
-                  setBlur={setBlur}
-                  blur={blur}
-                />
+              {chatHistory.map((messages, msgIndex) => (
+                <div key={msgIndex} className="message-group">
+                  {messages.map((message, index) => (
+                    <span
+                      ref={
+                        index === pinnedMessageIndex &&
+                        msgIndex === pinnedMessageMsgIndex
+                          ? pinnedMessageRef
+                          : null
+                      }
+                    >
+                      <Text_History
+                        key={index}
+                        msgIndex={msgIndex}
+                        data={message}
+                        chatHistory={chatHistory}
+                        chatHistroyID={chatHistroyID}
+                        id={id}
+                        index={index}
+                        setTabSelected={setTabSelected}
+                        loading={loading}
+                        setChatHistory={setChatHistory}
+                        setLoading={setLoading}
+                        setSwitchStatus={setSwitchStatus}
+                        setID={setID}
+                        tabSelected={tabSelected}
+                        type={type}
+                        setBlur={setBlur}
+                        blur={blur}
+                        setPinnedMessageText={OnSetPinnedMessageText}
+                        setPinnedMessageIndex={OnSetPinnedMessageIndex}
+                        setPinnedMessageMsgIndex={OnSetPinnedMessageMsgIndex}
+                        setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
+                        checkEditPinnedMessage={OnCheckEditPinnedMessage}
+                      />
+                    </span>
+                  ))}
+                </div>
               ))}
             </div>
           ) : (
             <div className="flex flex-col w-full max-w-[920px] mx-auto max-mxl:max-w-[900px] max-mlg:max-w-[800px] max-xl:max-w-[600px] max-msm:max-w-[360px] max-msm:mx-auto">
-              {imgHistory.map((data, index) => (
-                <Img_History
-                  key={index}
-                  data={data}
-                  imgHistory={imgHistory}
-                  imgHistoryID={imgHistoryID}
-                  id={id}
-                  index={index}
-                  setTabSelected={setTabSelected}
-                  loading={loading}
-                  setImgHistory={setImgHistory}
-                  setLoading={setLoading}
-                  setSwitchStatus={setSwitchStatus}
-                  setID={setID}
-                  tabSelected={tabSelected}
-                  ratio={ratio}
-                />
+              {imgHistory.map((data, msgIndex) => (
+                <div key={msgIndex} className="message-group">
+                  {data.map((image_data, index) => (
+                    <span
+                      ref={
+                        index === pinnedMessageIndex &&
+                        msgIndex === pinnedMessageMsgIndex
+                          ? pinnedMessageRef
+                          : null
+                      }
+                    >
+                      <Img_History
+                        key={index}
+                        data={image_data}
+                        msgIndex={msgIndex}
+                        imgHistory={imgHistory}
+                        imgHistoryID={imgHistoryID}
+                        id={id}
+                        index={index}
+                        setTabSelected={setTabSelected}
+                        loading={loading}
+                        setImgHistory={setImgHistory}
+                        setLoading={setLoading}
+                        setSwitchStatus={setSwitchStatus}
+                        setID={setID}
+                        tabSelected={tabSelected}
+                        ratio={ratio}
+                        setPinnedMessageText={OnSetPinnedMessageText}
+                        setPinnedMessageIndex={OnSetPinnedMessageIndex}
+                        setPinnedMessageMsgIndex={OnSetPinnedMessageMsgIndex}
+                        setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
+                        checkEditPinnedMessage={OnCheckEditPinnedMessage}
+                      />
+                    </span>
+                  ))}
+                </div>
               ))}
             </div>
           )
@@ -1280,7 +1612,7 @@ const Chat = ({
                   },
                 }}
               >
-                <Dropdown overlay={menu}>
+                <Dropdown menu={menu}>
                   <Image
                     alt=""
                     width={34}
@@ -1334,7 +1666,11 @@ const Chat = ({
                 height={18}
                 src={"/svg/send.svg"}
                 className="cursor-pointer"
-                onClick={() => TextGenereate()}
+                onClick={
+                  imageModel == false
+                    ? () => TextGenereate()
+                    : () => ImageGenerate()
+                }
               />
             </div>
           </div>
