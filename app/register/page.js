@@ -251,6 +251,7 @@ const RegistrationForm = ({ onClose }) => {
   };
 
   const SignUp = (userData) => {
+    console.log("userData", userData);
     setSubmitted(true);
     if (validateForm(userData)) {
       console.log("Form is valid, proceed with signup");
@@ -263,8 +264,13 @@ const RegistrationForm = ({ onClose }) => {
           if (response.status === 200) {
             NotificationManager.success(response.data.message);
             setTimeout(() => {
-              router.push("/signin");
-            }, 3000); // 3000 milliseconds = 3 seconds
+              if (response.data.status) {
+                localStorage.setItem("token", response.data.data.token);
+                localStorage.setItem("userID", response.data.data.user_id);
+                localStorage.setItem("email", response.data.data.email);
+                router.push("/");
+              }
+            }, 2000); // 3000 milliseconds = 3 seconds
           } else {
             NotificationManager.error(response.data.message);
           }
