@@ -16,6 +16,8 @@ const ContextMenu = ({
   chatHistroyID,
   msgIndex,
   setPinnedMessageIndex,
+  setUnpinnedMessageIndex,
+  contextedMenuPinnedStatus,
 }) => {
   const menuRef = useRef(null);
 
@@ -63,6 +65,27 @@ const ContextMenu = ({
     onClose();
   };
 
+  const handleUnpinMessage = () => {
+    let data = JSON.stringify({
+      id: chatHistroyID,
+      index: index,
+      msgIndex: msgIndex,
+    });
+    let type = "ai";
+
+    axios
+      .post(`${apiURL}/${type}/unPinnedMessage`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          setUnpinnedMessageIndex(msgIndex, index);
+        }
+      });
+
+    // Function to hide pinned message when close button is clicked
+  };
+
   return (
     <div
       ref={menuRef}
@@ -70,17 +93,37 @@ const ContextMenu = ({
       style={{ top: position.y, left: position.x }}
     >
       <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
-        <div
-          className="flex gap-3.5 font-nasalization"
-          onClick={() => handlePinMessage()}
-        >
-          <img
-            loading="lazy"
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/713fcfb81569259aa416af0897559d00d95a5a988a06f5f343ddf7fbab0be089?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
-            className="shrink-0 aspect-square w-[19px]"
-          />
-          Pin Message
-        </div>
+        {contextedMenuPinnedStatus ? (
+          <div
+            className="flex gap-3.5 font-nasalization"
+            onClick={() => handleUnpinMessage()}
+          >
+            <img
+              loading="lazy"
+              src="svg/pin.svg"
+              className="shrink-0 aspect-square w-[19px]"
+            />
+            <img
+              loading="lazy"
+              src="/Close.png"
+              className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[33px] mt-[10px]"
+            />
+            Unpin Message
+          </div>
+        ) : (
+          <div
+            className="flex gap-3.5 font-nasalization"
+            onClick={() => handlePinMessage()}
+          >
+            <img
+              loading="lazy"
+              src="svg/pin.svg"
+              className="shrink-0 aspect-square w-[19px]"
+            />
+            Pin Message
+          </div>
+        )}
+
         <hr className="border-t border-white opacity-20 my-1" />
         <div
           className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
@@ -88,7 +131,7 @@ const ContextMenu = ({
         >
           <img
             loading="lazy"
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/90b7eeeb6bf39af11ebb11cb9ec49d25a1ca4ad8248115a41ea1e336ff1f80dd?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
+            src="svg/reply.svg"
             className="shrink-0 self-start aspect-[1.14] fill-stone-300 w-[17px]"
           />
           Reply
@@ -100,7 +143,7 @@ const ContextMenu = ({
         >
           <img
             loading="lazy"
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/6e27d9edb44a4b1cc6c6733ac25ffa0e13bd9f56222deb91bf014d92c06f39d5?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
+            src="svg/trash.svg"
             className="shrink-0 w-5 aspect-[0.95]"
           />
           Delete Chat
@@ -131,6 +174,7 @@ const Text_History = ({
   setPinnedMessageIndex,
   setPinnedMessageMsgIndex,
   setPinnedMessageMsgType,
+  checkEditPinnedMessage,
 }) => {
   const [copyStatus, setCopyStatus] = useState(false);
   const { textStatus, setTextStatus } = useModelStatus();
@@ -148,11 +192,13 @@ const Text_History = ({
   const [editModeIndex, setEditModeIndex] = useState(-1);
   const textareaRef = useRef(null);
   const [contextMenuPosition, setContextMenuPosition] = useState(null); // State to store context menu position
+  const [contextedMenuPinnedStatus, setContextedMenuPinnedStatus] =
+    useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [contextedMenuIndex, setContextedMenuIndex] = useState();
 
   // Function to handle right-click on user messages
-  const handleContextMenu = (e, index) => {
+  const handleContextMenu = (e, index, pinned = false) => {
     e.preventDefault();
 
     if (e.type === "contextmenu" && e.clientX !== 0 && e.clientY !== 0) {
@@ -160,6 +206,8 @@ const Text_History = ({
 
       setContextMenuPosition({ x: e.clientX, y: e.clientY });
       setContextedMenuIndex(index);
+
+      setContextedMenuPinnedStatus(pinned);
     }
   };
 
@@ -210,14 +258,16 @@ const Text_History = ({
     updatedChatHistory[msgIndex].push({ role: "loading" });
     setChatHistory(updatedChatHistory);
 
-    if (
-      updatedChatHistory[msgIndex][index].hasOwnProperty("pinned") &&
-      updatedChatHistory[msgIndex][index].pinned === true
-    ) {
-      console.log("piinned message: ");
-      // The key "pinned" exists and its value is true
-      onSetPinnedMessageIndex(msgIndex, index);
-    }
+    // if (
+    //   updatedChatHistory[msgIndex][index].hasOwnProperty("pinned") &&
+    //   updatedChatHistory[msgIndex][index].pinned === true
+    // ) {
+    //   console.log("piinned message: ");
+    //   // The key "pinned" exists and its value is true
+    //   onSetPinnedMessageIndex(msgIndex, index);
+    // }
+
+    checkEditPinnedMessage(msgIndex, index, "text", editingMessage);
 
     // Mocking API call, replace it with your actual API call
     axios
@@ -347,6 +397,26 @@ const Text_History = ({
     setPinnedMessageIndex(index);
     setPinnedMessageText(chatHistory[msgIndex][index].content);
     setPinnedMessageMsgType("text");
+    const updatedChatHistory = chatHistory.map((msg, i) => {
+      return msg.map((item, j) => ({
+        ...item,
+        pinned: j === index && i === msgIndex ? true : false,
+      }));
+
+      return msg;
+    });
+
+    setChatHistory(updatedChatHistory);
+  };
+
+  const onSetUnpinnedMessageIndex = (msgIndex, index) => {
+    setPinnedMessageMsgIndex(0);
+    setPinnedMessageIndex(0);
+    setPinnedMessageText("");
+    setPinnedMessageMsgType("");
+    const updatedChatHistory = [...chatHistory];
+    delete updatedChatHistory[msgIndex][index].pinned;
+    setChatHistory(updatedChatHistory);
   };
 
   return (
@@ -390,7 +460,7 @@ const Text_History = ({
           ) : (
             <div
               className="flex flex-wrap flex-row mt-4"
-              onContextMenu={(e) => handleContextMenu(e, index)}
+              onContextMenu={(e) => handleContextMenu(e, index, data.pinned)}
             >
               <Tooltip
                 content={<p className="text-[#FFF]">Edit</p>}
@@ -452,6 +522,8 @@ const Text_History = ({
           chatHistroyID={chatHistroyID}
           msgIndex={msgIndex}
           setPinnedMessageIndex={onSetPinnedMessageIndex}
+          setUnpinnedMessageIndex={onSetUnpinnedMessageIndex}
+          contextedMenuPinnedStatus={contextedMenuPinnedStatus}
           // Add any necessary props or actions for the context menu component
         />
       )}
@@ -609,7 +681,7 @@ const Text_History = ({
             <div className="flex flex-col max-w-max mr-[138px] max-mxl:mr-[220px] max-xl:mr-[100px] max-msm:mr-12 mb-4">
               <div
                 className={`mt-4 bg-[#23272B] max-w-max rounded-[20px] py-3 px-6`}
-                onContextMenu={(e) => handleContextMenu(e, index)}
+                onContextMenu={(e) => handleContextMenu(e, index, data.pinned)}
               >
                 <ReactMarkDown data={data.content} />
               </div>

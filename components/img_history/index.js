@@ -26,6 +26,8 @@ const ContextMenu = ({
   imgHistoryID,
   msgIndex,
   setPinnedMessageIndex,
+  setUnpinnedMessageIndex,
+  contextedMenuPinnedStatus,
 }) => {
   const menuRef = useRef(null);
 
@@ -63,6 +65,27 @@ const ContextMenu = ({
     onClose();
   };
 
+  const handleUnpinMessage = () => {
+    let data = JSON.stringify({
+      id: imgHistoryID,
+      index: index,
+      msgIndex: msgIndex,
+    });
+    let type = "img";
+
+    axios
+      .post(`${apiURL}/${type}/unPinnedMessage`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          setUnpinnedMessageIndex(msgIndex, index);
+        }
+      });
+
+    // Function to hide pinned message when close button is clicked
+  };
+
   const handleReply = (index, chatHistroyID) => {
     console.log("Reply clicked");
     onClose();
@@ -80,17 +103,37 @@ const ContextMenu = ({
       style={{ top: position.y, left: position.x }}
     >
       <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
-        <div
-          className="flex gap-3.5 font-nasalization"
-          onClick={() => handlePinMessage()}
-        >
-          <img
-            loading="lazy"
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/713fcfb81569259aa416af0897559d00d95a5a988a06f5f343ddf7fbab0be089?apiKey=6de9a78aeb4b4f99a25ac6d0f9462b85&"
-            className="shrink-0 aspect-square w-[19px]"
-          />
-          Pin Message
-        </div>
+        {contextedMenuPinnedStatus ? (
+          <div
+            className="flex gap-3.5 font-nasalization"
+            onClick={() => handleUnpinMessage()}
+          >
+            <img
+              loading="lazy"
+              src="svg/pin.svg"
+              className="shrink-0 aspect-square w-[19px]"
+            />
+            <img
+              loading="lazy"
+              src="/Close.png"
+              className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[33px] mt-[10px]"
+            />
+            Unpin Message
+          </div>
+        ) : (
+          <div
+            className="flex gap-3.5 font-nasalization"
+            onClick={() => handlePinMessage()}
+          >
+            <img
+              loading="lazy"
+              src="svg/pin.svg"
+              className="shrink-0 aspect-square w-[19px]"
+            />
+            Pin Message
+          </div>
+        )}
+
         {/* <hr className="border-t border-white opacity-20 my-1" />
         <div
           className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
@@ -139,6 +182,7 @@ const Img_History = ({
   setPinnedMessageMsgIndex,
   setPinnedMessageMsgType,
   msgIndex,
+  checkEditPinnedMessage,
 }) => {
   const { imgStatus, setImgStatus } = useModelStatus();
   const [imageList, setImageList] = useState([
@@ -155,10 +199,12 @@ const Img_History = ({
   const textareaRef = useRef(null);
   const [contextMenuPosition, setContextMenuPosition] = useState(null);
   const [contextedMenuIndex, setContextedMenuIndex] = useState();
+  const [contextedMenuPinnedStatus, setContextedMenuPinnedStatus] =
+    useState(false);
   console.log("image history`", imgHistory);
   console.log("image data`", data);
   // Function to handle right-click on user messages
-  const handleContextMenu = (e, index) => {
+  const handleContextMenu = (e, index, pinned = false) => {
     e.preventDefault();
 
     if (e.type === "contextmenu" && e.clientX !== 0 && e.clientY !== 0) {
@@ -166,6 +212,7 @@ const Img_History = ({
 
       setContextMenuPosition({ x: e.clientX, y: e.clientY });
       setContextedMenuIndex(index);
+      setContextedMenuPinnedStatus(pinned);
     }
   };
 
@@ -218,14 +265,16 @@ const Img_History = ({
     updatedChatHistory[msgIndex].push({ role: "loading" });
     setImgHistory(updatedChatHistory);
 
-    if (
-      updatedChatHistory[msgIndex][index].hasOwnProperty("pinned") &&
-      updatedChatHistory[msgIndex][index].pinned === true
-    ) {
-      console.log("pinned message: ");
-      // The key "pinned" exists and its value is true
-      onSetPinnedMessageIndex(msgIndex, index);
-    }
+    // if (
+    //   updatedChatHistory[msgIndex][index].hasOwnProperty("pinned") &&
+    //   updatedChatHistory[msgIndex][index].pinned === true
+    // ) {
+    //   console.log("pinned message: ");
+    //   // The key "pinned" exists and its value is true
+    //   onSetPinnedMessageIndex(msgIndex, index);
+    // }
+
+    checkEditPinnedMessage(msgIndex, index, "image", editingMessage);
 
     // Mocking API call, replace it with your actual API call
     setTimeout(() => {
@@ -266,7 +315,7 @@ const Img_History = ({
     document.body.removeChild(link);
   };
 
-  const Summarize = (data, id) => {
+  const Summarize = (data, id, msgIndex) => {
     console.log("Sending data: ", data);
     axios
       .post(`${apiURL}/img/summarize`, data, {
@@ -274,7 +323,7 @@ const Img_History = ({
       })
       .then((response) => {
         let a = [...imgHistory];
-        a[id]["content"] = response.data.data;
+        a[msgIndex][id]["content"] = response.data.data;
         console.log(a);
         setLoading(false);
         setImgHistory(a);
@@ -313,6 +362,27 @@ const Img_History = ({
     setPinnedMessageIndex(index);
     setPinnedMessageText(imgHistory[msgIndex][index].content);
     setPinnedMessageMsgType("image");
+
+    const updatedImageHistory = imgHistory.map((msg, i) => {
+      return msg.map((item, j) => ({
+        ...item,
+        pinned: j === index && i === msgIndex ? true : false,
+      }));
+
+      return msg;
+    });
+
+    setImgHistory(updatedImageHistory);
+  };
+
+  const onSetUnpinnedMessageIndex = (msgIndex, index) => {
+    setPinnedMessageMsgIndex(0);
+    setPinnedMessageIndex(0);
+    setPinnedMessageText("");
+    setPinnedMessageMsgType("");
+    const updatedImageHistory = [...imgHistory];
+    delete updatedImageHistory[msgIndex][index].pinned;
+    setImgHistory(updatedImageHistory);
   };
 
   return (
@@ -360,7 +430,7 @@ const Img_History = ({
           ) : (
             <div
               className="flex flex-wrap flex-row mt-4"
-              onContextMenu={(e) => handleContextMenu(e, index)}
+              onContextMenu={(e) => handleContextMenu(e, index, data.pinned)}
             >
               <Tooltip
                 content={<p className="text-[#FFF]">Edit</p>}
@@ -408,6 +478,7 @@ const Img_History = ({
                   />
                 </div>
               </Tooltip>
+
               <div className="max-w-[650px] max-xl:max-w-[400px] max-msm:max-w-[250px] break-words text-[20px] text-[#FFF] font-helvetica font-normal leading-8 bg-[#0A84FF] rounded-[20px] py-3 px-5">
                 <ReactMarkDown data={data.content} />
               </div>
@@ -424,6 +495,8 @@ const Img_History = ({
           imgHistoryID={imgHistoryID}
           msgIndex={msgIndex}
           setPinnedMessageIndex={onSetPinnedMessageIndex}
+          setUnpinnedMessageIndex={onSetUnpinnedMessageIndex}
+          contextedMenuPinnedStatus={contextedMenuPinnedStatus}
           // Add any necessary props or actions for the context menu component
         />
       )}
@@ -454,8 +527,8 @@ const Img_History = ({
                   let sumData = {
                     new_type: e.target.outerText,
                     id: imgHistoryID,
-                    prompt: imgHistory[index - 1].content,
-                    number: (index - 1) / 2,
+                    prompt: imgHistory[msgIndex][index - 1].content,
+                    number: msgIndex,
                     userID: localStorage.getItem("userID"),
                     size: ratio,
                   };
@@ -464,7 +537,7 @@ const Img_History = ({
                   setLoading(true);
                   setID(index);
                   let x = {
-                    id: (index - 1) / 2,
+                    id: msgIndex,
                     historyID: imgHistoryID,
                   };
                   console.log("Sending this data: ", x);
@@ -486,7 +559,7 @@ const Img_History = ({
                         console.log("sumData:", sumData);
                         console.log("index:", index);
 
-                        Summarize(sumData, index);
+                        Summarize(sumData, index, msgIndex);
                       } else getDataByType(imgHistoryID, index);
                     });
                 }}

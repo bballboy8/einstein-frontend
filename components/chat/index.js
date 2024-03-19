@@ -225,8 +225,13 @@ const Chat = ({
   };
 
   const OnSetPinnedMessageText = (text) => {
-    setPinMessageVisible(true);
-    setPinnedMessageText(text);
+    if (text !== null && text !== "") {
+      setPinMessageVisible(true);
+      setPinnedMessageText(text);
+    } else {
+      setPinMessageVisible(false);
+      setPinnedMessageText(text);
+    }
   };
   const handlePrivacyPolicyClick = () => {
     setIsPrivacyPolicyModalOpen(true);
@@ -241,12 +246,12 @@ const Chat = ({
     let type = "ai";
 
     if (pinnedMessageMsgType == "image") {
-      type = "img";
       data = JSON.stringify({
         id: imgHistoryID,
         index: pinnedMessageIndex,
         msgIndex: pinnedMessageMsgIndex,
       });
+      type = "img";
     }
     axios
       .post(`${apiURL}/${type}/unPinnedMessage`, data, {
@@ -1206,6 +1211,40 @@ const Chat = ({
     }
   };
 
+  const OnCheckEditPinnedMessage = (msgIndex, Index, type, currentText) => {
+    if (type == "text" && pinnedMessageMsgType == "text") {
+      if (pinnedMessageMsgIndex >= msgIndex && pinnedMessageIndex > Index) {
+        setPinMessageVisible(false);
+        setPinnedMessageIndex(0);
+        setPinnedMessageMsgIndex(0);
+        setPinnedMessageMsgType(null);
+        setPinnedMessageText("");
+      } else if (
+        pinnedMessageMsgIndex == msgIndex &&
+        pinnedMessageIndex == Index
+      ) {
+        setPinnedMessageText(currentText);
+      }
+    } else {
+      console.log("pinnedMessageMsgIndex", pinnedMessageMsgIndex);
+      console.log("msgIndex", msgIndex);
+      console.log("pinnedMessageIndex", pinnedMessageIndex);
+      console.log("Index", Index);
+      if (pinnedMessageMsgIndex >= msgIndex && pinnedMessageIndex == Index) {
+        setPinMessageVisible(false);
+        setPinnedMessageIndex(0);
+        setPinnedMessageMsgIndex(0);
+        setPinnedMessageMsgType(null);
+        setPinnedMessageText("");
+      } else if (
+        pinnedMessageMsgIndex == msgIndex &&
+        pinnedMessageIndex == Index
+      ) {
+        setPinnedMessageText(currentText);
+      }
+    }
+  };
+
   return (
     <div
       className={`flex flex-1 flex-col pl-8 max-mlg:px-2 ${
@@ -1303,6 +1342,7 @@ const Chat = ({
                         setPinnedMessageIndex={OnSetPinnedMessageIndex}
                         setPinnedMessageMsgIndex={OnSetPinnedMessageMsgIndex}
                         setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
+                        checkEditPinnedMessage={OnCheckEditPinnedMessage}
                       />
                     </span>
                   ))}
@@ -1342,6 +1382,7 @@ const Chat = ({
                         setPinnedMessageIndex={OnSetPinnedMessageIndex}
                         setPinnedMessageMsgIndex={OnSetPinnedMessageMsgIndex}
                         setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
+                        checkEditPinnedMessage={OnCheckEditPinnedMessage}
                       />
                     </span>
                   ))}
