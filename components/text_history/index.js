@@ -175,6 +175,7 @@ const Text_History = ({
   setPinnedMessageMsgIndex,
   setPinnedMessageMsgType,
   checkEditPinnedMessage,
+  setModelType,
 }) => {
   const [copyStatus, setCopyStatus] = useState(false);
   const { textStatus, setTextStatus } = useModelStatus();
@@ -353,7 +354,7 @@ const Text_History = ({
     }
   };
 
-  const Regenerate = (i) => {
+  const Regenerate = (i, modal_type) => {
     setLoading(true);
     setID(i);
     let pasthistory = [];
@@ -363,8 +364,9 @@ const Text_History = ({
     });
     let data = {
       historyData: pasthistory,
-      type: type,
+      type: modal_type,
     };
+    console.log("regenrate data", data);
     axios
       .post(`${apiURL}/ai/regenerate`, data, {
         headers: { "Content-Type": "application/json" },
@@ -419,6 +421,42 @@ const Text_History = ({
     setChatHistory(updatedChatHistory);
   };
 
+  const onChangeTabSelected = (outerText) => {
+    let pasthistory = [];
+    chatHistory.slice(0, index).map((item, i) => {
+      item.map((msg, j) => {
+        let data = removeTypeField(msg);
+        pasthistory.push(data);
+      });
+    });
+    let sumData = {
+      old_type: type,
+      new_type: outerText,
+      history: pasthistory,
+      id: chatHistroyID,
+      number: msgIndex,
+      userID: localStorage.getItem("userID"),
+    };
+    setSwitchStatus(true);
+    setLoading(true);
+    setID(index);
+    setModelType(outerText);
+    let x = {
+      id: (index - 1) / 2,
+      historyID: chatHistroyID,
+    };
+    axios
+      .post(`${apiURL}/ai/getType/`, x, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        if (response.data.data.indexOf(tabSelected) == -1)
+          Summarize(sumData, msgIndex, index);
+        else getDataByType(chatHistroyID, index);
+      });
+  };
   return (
     <div key={index} className="flex flex-col w-full">
       {/* user compannent */}
@@ -556,41 +594,7 @@ const Text_History = ({
                 variant="light"
                 selectedKey={id == index ? tabSelected : data.type}
                 onSelectionChange={setTabSelected}
-                onClick={(e) => {
-                  let pasthistory = [];
-                  chatHistory.slice(0, index).map((item, i) => {
-                    item.map((msg, j) => {
-                      let data = removeTypeField(msg);
-                      pasthistory.push(data);
-                    });
-                  });
-                  let sumData = {
-                    old_type: type,
-                    new_type: e.target.outerText,
-                    history: pasthistory,
-                    id: chatHistroyID,
-                    number: msgIndex,
-                    userID: localStorage.getItem("userID"),
-                  };
-                  setSwitchStatus(true);
-                  setLoading(true);
-                  setID(index);
-                  let x = {
-                    id: (index - 1) / 2,
-                    historyID: chatHistroyID,
-                  };
-                  axios
-                    .post(`${apiURL}/ai/getType/`, x, {
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                    })
-                    .then((response) => {
-                      if (response.data.data.indexOf(tabSelected) == -1)
-                        Summarize(sumData, msgIndex, index);
-                      else getDataByType(chatHistroyID, index);
-                    });
-                }}
+                onClick={(e) => onChangeTabSelected(e.target.outerText)}
                 classNames={{
                   tabList: "w-full relative border-divider p-0 gap-0",
                   cursor: "w-full bg-[#2E353C] p-0",
@@ -873,7 +877,7 @@ const Text_History = ({
                       alt=""
                       width={16}
                       height={21}
-                      onClick={() => Regenerate(index)}
+                      onClick={() => Regenerate(index, data.type)}
                       src={"svg/regen.svg"}
                       className="cursor-pointer"
                     />
