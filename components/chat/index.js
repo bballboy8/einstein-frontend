@@ -266,174 +266,187 @@ const Chat = ({
     // Function to hide pinned message when close button is clicked
   };
 
+  const changeModal = (number) => {
+    console.log(number);
+    setTextModel(number);
+    setSelected(textList[number]);
+  };
+
   const menu = (
     <div className="mb-4">
       <Menu>
-        <Menu.Item>
-          <Tooltip
-            placement="right"
-            content={
-              <div className="text-base text-[#FFF] font-helvetica font-normal">
-                OpenAI’s top model, great with writing and math
-              </div>
-            }
-            classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
-            }}
-            delay={0}
-            closeDelay={0}
-          >
-            <div
-              className="flex flex-row gap-2 my-2"
-              onClick={() => setTextModel(1)}
+        <div className="mb-4">
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  OpenAI’s top model, great with writing and math
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
             >
-              <Image alt="" width={24} height={24} src={"/models/gpt4.png"} />
-              <p className="text-sm font-medium text-[#FFF] leading-normal">
-                ChatGPT - 4
-              </p>
-            </div>
-          </Tooltip>
-        </Menu.Item>
-        <div className="border-b border-b-[#313535]"></div>
-        <Menu.Item>
-          <Tooltip
-            placement="right"
-            content={
-              <div className="text-base text-[#FFF] font-helvetica font-normal">
-                Googles top model, great with writing and math
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(1)}
+              >
+                <Image alt="" width={24} height={24} src={"/models/gpt4.png"} />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  ChatGPT - 4
+                </p>
               </div>
-            }
-            classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
-            }}
-            delay={0}
-            closeDelay={0}
-          >
-            <div
-              className="flex flex-row gap-2 my-2"
-              onClick={() => setTextModel(2)}
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Googles top model, great with writing and math
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
             >
-              <Image alt="" width={24} height={24} src={"/models/gemini.png"} />
-              <p className="text-sm font-medium text-[#FFF] leading-normal">
-                Gemini
-              </p>
-            </div>
-          </Tooltip>
-        </Menu.Item>
-        <div className="border-b border-b-[#313535]"></div>
-        <Menu.Item>
-          <Tooltip
-            placement="right"
-            content={
-              <div className="text-base text-[#FFF] font-helvetica font-normal">
-                Has access to the internet and is always up to date
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(2)}
+              >
+                <Image
+                  alt=""
+                  width={24}
+                  height={24}
+                  src={"/models/gemini.png"}
+                />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  Gemini
+                </p>
               </div>
-            }
-            classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
-            }}
-            delay={0}
-            closeDelay={0}
-          >
-            <div
-              className="flex flex-row gap-2 my-2"
-              onClick={() => setTextModel(3)}
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Has access to the internet and is always up to date
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
             >
-              <Image
-                alt=""
-                width={24}
-                height={24}
-                src={"/models/perplexity.png"}
-              />
-              <p className="text-sm font-medium text-[#FFF] leading-normal">
-                Perplexity
-              </p>
-            </div>
-          </Tooltip>
-        </Menu.Item>
-        <div className="border-b border-b-[#313535]"></div>
-        <Menu.Item>
-          <Tooltip
-            placement="right"
-            content={
-              <div className="text-base text-[#FFF] font-helvetica font-normal">
-                Great for quick and concise answers
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(3)}
+              >
+                <Image
+                  alt=""
+                  width={24}
+                  height={24}
+                  src={"/models/perplexity.png"}
+                />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  Perplexity
+                </p>
               </div>
-            }
-            classNames={{
-              content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
-            }}
-            delay={0}
-            closeDelay={0}
-          >
-            <div
-              className="flex flex-row gap-2 my-2"
-              onClick={() => setTextModel(0)}
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Great for quick and concise answers
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
             >
-              <Image alt="" width={24} height={24} src={"/models/gpt3.png"} />
-              <p className="text-sm font-medium text-[#FFF] leading-normal">
-                ChatGPT - 3.5
-              </p>
-            </div>
-          </Tooltip>
-        </Menu.Item>
-        <div className="border-b border-b-[#313535]"></div>
-        <Menu.Item>
-          <Tooltip
-            placement="right"
-            content={
-              <div className="text-base text-[#FFF] font-helvetica font-normal">
-                Great for quick responses
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(0)}
+              >
+                <Image alt="" width={24} height={24} src={"/models/gpt3.png"} />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  ChatGPT - 3.5
+                </p>
               </div>
-            }
-            classNames={{
-              content: ["mx-5 py-2 px-0", "bg-[#2E353C]"],
-            }}
-            delay={0}
-            closeDelay={0}
-          >
-            <div
-              className="flex flex-row gap-2 my-2"
-              onClick={() => setTextModel(4)}
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Great for quick responses
+                </div>
+              }
+              classNames={{
+                content: ["mx-5 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
             >
-              <Image
-                alt=""
-                width={24}
-                height={24}
-                src={"/models/mistral.png"}
-              />
-              <p className="text-sm font-medium text-[#FFF] leading-normal">
-                Mistral
-              </p>
-            </div>
-          </Tooltip>
-        </Menu.Item>
-        <div className="border-b border-b-[#313535]"></div>
-        <Menu.Item>
-          <Tooltip
-            placement="right"
-            content={
-              <div className="text-base text-[#FFF] font-helvetica font-normal">
-                Auto selects the best model for you (coming soon!)
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(4)}
+              >
+                <Image
+                  alt=""
+                  width={24}
+                  height={24}
+                  src={"/models/mistral.png"}
+                />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  Mistral
+                </p>
               </div>
-            }
-            classNames={{
-              content: ["mx-5 py-2 px-0", "bg-[#2E353C]"],
-            }}
-            delay={0}
-            closeDelay={0}
-          >
-            <div
-              className="flex flex-row gap-2 my-2"
-              onClick={() => setTextModel(Math.floor(Math.random() * 5))}
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Auto selects the best model for you (coming soon!)
+                </div>
+              }
+              classNames={{
+                content: ["mx-5 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
             >
-              <Image alt="" width={24} height={24} src={"/models/auto.png"} />
-              <p className="text-sm font-medium text-[#FFF] leading-normal">
-                Auto select
-              </p>
-            </div>
-          </Tooltip>
-        </Menu.Item>
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(Math.floor(Math.random() * 5))}
+              >
+                <Image alt="" width={24} height={24} src={"/models/auto.png"} />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  Auto select
+                </p>
+              </div>
+            </Tooltip>
+          </Menu.Item>
+        </div>
       </Menu>
     </div>
   );
@@ -445,6 +458,8 @@ const Chat = ({
 
   useEffect(() => {
     setModelType(selected);
+
+    // setTextModel(textList.indexOf(selected));
   }, [selected]);
 
   useEffect(() => {
@@ -1245,6 +1260,11 @@ const Chat = ({
     }
   };
 
+  const OnSetModalType = (type) => {
+    setTextModel(textList.indexOf(type));
+    setSelected(type);
+  };
+
   return (
     <div
       className={`flex flex-1 flex-col pl-8 max-mlg:px-2 ${
@@ -1343,6 +1363,7 @@ const Chat = ({
                         setPinnedMessageMsgIndex={OnSetPinnedMessageMsgIndex}
                         setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
                         checkEditPinnedMessage={OnCheckEditPinnedMessage}
+                        setModelType={OnSetModalType}
                       />
                     </span>
                   ))}
@@ -1606,21 +1627,25 @@ const Chat = ({
                   },
                 }}
               >
-                <Dropdown menu={menu}>
+                <Dropdown
+                  overlay={menu}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
                   <Image
                     alt=""
                     width={34}
                     height={34}
                     src={
-                      textModel == 0
+                      textModel === 0
                         ? "/models/gpt3.png"
-                        : textModel == 1
+                        : textModel === 1
                         ? "/models/gpt4.png"
-                        : textModel == 2
+                        : textModel === 2
                         ? "/models/gemini.png"
-                        : textModel == 3
+                        : textModel === 3
                         ? "/models/perplexity.png"
-                        : textModel == 4
+                        : textModel === 4
                         ? "/models/mistral.png"
                         : ""
                     }
