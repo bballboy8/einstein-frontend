@@ -9,150 +9,6 @@ import ReactMarkDown from "../Markdown";
 import { apiURL } from "@/config";
 import { useDisclosure } from "@nextui-org/react";
 
-const ContextMenu = ({
-  position,
-  onClose,
-  index,
-  chatHistroyID,
-  msgIndex,
-  setPinnedMessageIndex,
-  setUnpinnedMessageIndex,
-  contextedMenuPinnedStatus,
-}) => {
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [onClose]);
-
-  const handlePinMessage = () => {
-    let data = JSON.stringify({
-      id: chatHistroyID,
-      index: index,
-      msgIndex: msgIndex,
-    });
-
-    axios
-      .post(`${apiURL}/ai/updatePinnedMessage`, data, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        if (response.status == 200) {
-          setPinnedMessageIndex(msgIndex, index);
-        }
-      });
-
-    onClose();
-  };
-
-  const handleReply = (index, chatHistroyID) => {
-    console.log("Reply clicked");
-    onClose();
-  };
-
-  const handleDeleteChat = (index, chatHistroyID) => {
-    console.log("Delete Chat clicked");
-    onClose();
-  };
-
-  const handleUnpinMessage = () => {
-    let data = JSON.stringify({
-      id: chatHistroyID,
-      index: index,
-      msgIndex: msgIndex,
-    });
-    let type = "ai";
-
-    axios
-      .post(`${apiURL}/${type}/unPinnedMessage`, data, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        if (response.status == 200) {
-          setUnpinnedMessageIndex(msgIndex, index);
-        }
-      });
-
-    // Function to hide pinned message when close button is clicked
-  };
-
-  return (
-    <div
-      ref={menuRef}
-      className="absolute z-10  border-gray-300 rounded shadow"
-      style={{ top: position.y, left: position.x }}
-    >
-      <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
-        {contextedMenuPinnedStatus ? (
-          <div
-            className="flex gap-3.5 font-nasalization"
-            onClick={() => handleUnpinMessage()}
-          >
-            <img
-              loading="lazy"
-              src="svg/pin.svg"
-              className="shrink-0 aspect-square w-[19px]"
-            />
-            <img
-              loading="lazy"
-              src="/Close.png"
-              className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[33px] mt-[10px]"
-            />
-            Unpin Message
-          </div>
-        ) : (
-          <div
-            className="flex gap-3.5 font-nasalization"
-            onClick={() => handlePinMessage()}
-          >
-            <img
-              loading="lazy"
-              src="svg/pin.svg"
-              className="shrink-0 aspect-square w-[19px]"
-            />
-            Pin Message
-          </div>
-        )}
-
-        <hr className="border-t border-white opacity-20 my-1" />
-        <div
-          className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
-          onClick={() => handleReply()}
-        >
-          <img
-            loading="lazy"
-            src="svg/reply.svg"
-            className="shrink-0 self-start aspect-[1.14] fill-stone-300 w-[17px]"
-          />
-          Reply
-        </div>
-        <hr className="border-t border-white opacity-20 my-1" />
-        <div
-          className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "
-          onClick={() => handleDeleteChat()}
-        >
-          <img
-            loading="lazy"
-            src="svg/trash.svg"
-            className="shrink-0 w-5 aspect-[0.95]"
-          />
-          Delete Chat
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Text_History = ({
   data,
   chatHistory,
@@ -160,13 +16,11 @@ const Text_History = ({
   id,
   msgIndex,
   index,
-  setTabSelected,
   loading,
   setChatHistory,
   setLoading,
   setSwitchStatus,
   setID,
-  tabSelected,
   type,
   setBlur,
   blur,
@@ -177,6 +31,7 @@ const Text_History = ({
   checkEditPinnedMessage,
   setModelType,
 }) => {
+  const [tabSelected, setTabSelected] = useState(data.type);
   const [copyStatus, setCopyStatus] = useState(false);
   const { textStatus, setTextStatus } = useModelStatus();
   const [vote, setVote] = useState(false);
@@ -238,6 +93,10 @@ const Text_History = ({
     console.log("Submit Edit Clicked! Now call API!");
     const updatedChatHistory = [...chatHistory];
     updatedChatHistory[msgIndex][index].content = editingMessage;
+
+    const modelType = updatedChatHistory[msgIndex][1].type;
+    setModelType(modelType);
+    console.log("Editing message for model; ", modelType);
     updatedChatHistory[msgIndex].splice(index + 1); // Remove messages after the edited message
     updatedChatHistory.splice(msgIndex + 1); // Remove messages after the edited message
 
@@ -248,7 +107,7 @@ const Text_History = ({
     });
 
     let sumData = {
-      type: type,
+      type: modelType,
       history: pasthistory,
       id: chatHistroyID,
       number: (index - 1) / 2,
@@ -286,22 +145,22 @@ const Text_History = ({
       });
   };
 
-  const getDataByType = (id, i) => {
-    axios
-      .get(`${apiURL}/ai/gethistoryByID/${id}`, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        let a = [...chatHistory];
-        let b = [];
-        response.data.data.history[(i - 1) / 2].map((item, index) => {
-          if (item.type == tabSelected) b.push(item);
-        });
-        a[i] = b[0];
-        setLoading(false);
-        setChatHistory(a);
-      });
-  };
+  // const getDataByType = (id, i) => {
+  //   axios
+  //     .get(`${apiURL}/ai/gethistoryByID/${id}`, {
+  //       headers: { "Content-Type": "application/json" },
+  //     })
+  //     .then((response) => {
+  //       let a = [...chatHistory];
+  //       let b = [];
+  //       response.data.data.history[(i - 1) / 2].map((item, index) => {
+  //         if (item.type == tabSelected) b.push(item);
+  //       });
+  //       a[i] = b[0];
+  //       setLoading(false);
+  //       setChatHistory(a);
+  //     });
+  // };
 
   const handleLoading = () => {
     // Handling loading state
@@ -318,15 +177,22 @@ const Text_History = ({
   }, []);
 
   const Summarize = (data, msgIndex, index) => {
+    // let chatHistoryCopy = [...chatHistory];
+    // let slicedChatHistory = chatHistory.slice(0, msgIndex);
+    chatHistory[msgIndex][index]["role"] = "loading";
+    // setChatHistory(slicedChatHistory);
+    setChatHistory(chatHistory);
+    setLoading(true);
     axios
       .post(`${apiURL}/ai/summarize`, data, {
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
-        let a = [...chatHistory];
-        a[msgIndex][index]["content"] = response.data.data;
+        chatHistory[msgIndex][index]["content"] = response.data.data;
+        chatHistory[msgIndex][index]["type"] = data.new_type;
+        chatHistory[msgIndex][index]["role"] = "assistant";
         setLoading(false);
-        setChatHistory(a);
+        setChatHistory(chatHistory);
       });
   };
 
@@ -354,19 +220,25 @@ const Text_History = ({
     }
   };
 
-  const Regenerate = (i, modal_type) => {
+  const Regenerate = (i, chatHistroyID) => {
     setLoading(true);
     setID(i);
     let pasthistory = [];
-    chatHistory.slice(0, i).map((item) => {
-      let data = removeTypeField(item);
+    chatHistory.slice(0, i + 1).map((item) => {
+      let data = item.slice(0, -1); // Remove the last element of the array
       pasthistory.push(data);
     });
+
     let data = {
       historyData: pasthistory,
-      type: modal_type,
+      type: chatHistory[i][1].type,
+      index: i,
+      id: chatHistroyID,
     };
     console.log("regenrate data", data);
+    chatHistory[msgIndex][1]["role"] = "loading";
+    setChatHistory(chatHistory);
+
     axios
       .post(`${apiURL}/ai/regenerate`, data, {
         headers: { "Content-Type": "application/json" },
@@ -374,9 +246,11 @@ const Text_History = ({
       .then((response) => {
         console.log(response.data.data);
         let a = [...chatHistory];
-        a[i]["content"] = response.data.data;
+        a[msgIndex][1]["content"] = response.data.data;
+        a[msgIndex][1]["role"] = "assistant";
         setLoading(false);
         setChatHistory(a);
+        setModelType(chatHistory[i][1].type);
       });
   };
 
@@ -422,40 +296,28 @@ const Text_History = ({
   };
 
   const onChangeTabSelected = (outerText) => {
+    setTabSelected(outerText);
     let pasthistory = [];
-    chatHistory.slice(0, index).map((item, i) => {
-      item.map((msg, j) => {
-        let data = removeTypeField(msg);
-        pasthistory.push(data);
+
+    chatHistory.slice(0, msgIndex + 1).map((item) => {
+      let data = item.slice(0, -1); // Remove the last element of the array
+      data.map((msg, j) => {
+        pasthistory.push(msg);
       });
     });
+
     let sumData = {
-      old_type: type,
+      old_type: chatHistory[msgIndex][1]["type"],
       new_type: outerText,
-      history: pasthistory,
+      history: [...pasthistory],
       id: chatHistroyID,
       number: msgIndex,
       userID: localStorage.getItem("userID"),
     };
     setSwitchStatus(true);
-    setLoading(true);
-    setID(index);
+    setID(chatHistroyID);
     setModelType(outerText);
-    let x = {
-      id: (index - 1) / 2,
-      historyID: chatHistroyID,
-    };
-    axios
-      .post(`${apiURL}/ai/getType/`, x, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        if (response.data.data.indexOf(tabSelected) == -1)
-          Summarize(sumData, msgIndex, index);
-        else getDataByType(chatHistroyID, index);
-      });
+    Summarize(sumData, msgIndex, index);
   };
   return (
     <div key={index} className="flex flex-col w-full">
@@ -877,7 +739,7 @@ const Text_History = ({
                       alt=""
                       width={16}
                       height={21}
-                      onClick={() => Regenerate(index, data.type)}
+                      onClick={() => Regenerate(msgIndex, chatHistroyID)}
                       src={"svg/regen.svg"}
                       className="cursor-pointer"
                     />
@@ -908,3 +770,147 @@ const Text_History = ({
 };
 
 export default Text_History;
+
+const ContextMenu = ({
+  position,
+  onClose,
+  index,
+  chatHistroyID,
+  msgIndex,
+  setPinnedMessageIndex,
+  setUnpinnedMessageIndex,
+  contextedMenuPinnedStatus,
+}) => {
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [onClose]);
+
+  const handlePinMessage = () => {
+    let data = JSON.stringify({
+      id: chatHistroyID,
+      index: index,
+      msgIndex: msgIndex,
+    });
+
+    axios
+      .post(`${apiURL}/ai/updatePinnedMessage`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          setPinnedMessageIndex(msgIndex, index);
+        }
+      });
+
+    onClose();
+  };
+
+  const handleReply = (index, chatHistroyID) => {
+    console.log("Reply clicked");
+    onClose();
+  };
+
+  const handleDeleteChat = (index, chatHistroyID) => {
+    console.log("Delete Chat clicked");
+    onClose();
+  };
+
+  const handleUnpinMessage = () => {
+    let data = JSON.stringify({
+      id: chatHistroyID,
+      index: index,
+      msgIndex: msgIndex,
+    });
+    let type = "ai";
+
+    axios
+      .post(`${apiURL}/${type}/unPinnedMessage`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status == 200) {
+          setUnpinnedMessageIndex(msgIndex, index);
+        }
+      });
+
+    // Function to hide pinned message when close button is clicked
+  };
+
+  return (
+    <div
+      ref={menuRef}
+      className="absolute z-10  border-gray-300 rounded shadow"
+      style={{ top: position.y, left: position.x }}
+    >
+      <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
+        {contextedMenuPinnedStatus ? (
+          <div
+            className="flex gap-3.5 font-nasalization"
+            onClick={() => handleUnpinMessage()}
+          >
+            <img
+              loading="lazy"
+              src="svg/pin.svg"
+              className="shrink-0 aspect-square w-[19px]"
+            />
+            <img
+              loading="lazy"
+              src="/Close.png"
+              className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[33px] mt-[10px]"
+            />
+            Unpin Message
+          </div>
+        ) : (
+          <div
+            className="flex gap-3.5 font-nasalization"
+            onClick={() => handlePinMessage()}
+          >
+            <img
+              loading="lazy"
+              src="svg/pin.svg"
+              className="shrink-0 aspect-square w-[19px]"
+            />
+            Pin Message
+          </div>
+        )}
+
+        <hr className="border-t border-white opacity-20 my-1" />
+        <div
+          className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
+          onClick={() => handleReply()}
+        >
+          <img
+            loading="lazy"
+            src="svg/reply.svg"
+            className="shrink-0 self-start aspect-[1.14] fill-stone-300 w-[17px]"
+          />
+          Reply
+        </div>
+        <hr className="border-t border-white opacity-20 my-1" />
+        <div
+          className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "
+          onClick={() => handleDeleteChat()}
+        >
+          <img
+            loading="lazy"
+            src="svg/trash.svg"
+            className="shrink-0 w-5 aspect-[0.95]"
+          />
+          Delete Chat
+        </div>
+      </div>
+    </div>
+  );
+};
