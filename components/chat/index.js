@@ -518,8 +518,9 @@ const Chat = ({
               }
             });
           });
-          setModelType(response.data.data.type);
+          setTextModel(textList.indexOf(response.data.data.type));
           setType(response.data.data.type);
+
           setChatHistory(response.data.data.history);
         });
     } else {
@@ -595,6 +596,7 @@ const Chat = ({
       });
       setChatTitle(value);
       setValue("");
+      console.log("TExt generaate: data--> ", data);
       if (selected == "GPT-4") {
         axios
           .post(`${apiURL}/ai/gpt4`, data, {
@@ -1354,13 +1356,11 @@ const Chat = ({
                         chatHistroyID={chatHistroyID}
                         id={id}
                         index={index}
-                        setTabSelected={setTabSelected}
                         loading={loading}
                         setChatHistory={setChatHistory}
                         setLoading={setLoading}
                         setSwitchStatus={setSwitchStatus}
                         setID={setID}
-                        tabSelected={tabSelected}
                         type={type}
                         setBlur={setBlur}
                         blur={blur}
