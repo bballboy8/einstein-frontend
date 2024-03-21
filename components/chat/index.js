@@ -8,14 +8,7 @@ import Img_History from "@/components/img_history";
 import Text_History from "../text_history";
 import "react-contexify/ReactContexify.css";
 import Image from "next/image";
-import {
-  Tabs,
-  Tab,
-  Tooltip,
-  useDisclosure,
-  Select,
-  SelectItem,
-} from "@nextui-org/react";
+import { Tabs, Tab, Tooltip, Select, SelectItem } from "@nextui-org/react";
 import { Menu, Dropdown, ConfigProvider } from "antd";
 import useAutosizeTextArea from "./useAutosizeTextArea";
 import { apiURL } from "@/config";
