@@ -1340,7 +1340,7 @@ const Chat = ({
               {chatHistory.map((messages, msgIndex) => (
                 <div key={msgIndex} className="message-group">
                   {messages.map((message, index) => (
-                    <span
+                    <span key={`${msgIndex}-${index}`}
                       ref={
                         index === pinnedMessageIndex &&
                         msgIndex === pinnedMessageMsgIndex
@@ -1349,7 +1349,7 @@ const Chat = ({
                       }
                     >
                       <Text_History
-                        key={index}
+                        key={`${msgIndex}-${index}`}
                         msgIndex={msgIndex}
                         data={message}
                         chatHistory={chatHistory}
@@ -1381,7 +1381,7 @@ const Chat = ({
               {imgHistory.map((data, msgIndex) => (
                 <div key={msgIndex} className="message-group">
                   {data.map((image_data, index) => (
-                    <span
+                    <span key={`${msgIndex}-${index}`}
                       ref={
                         index === pinnedMessageIndex &&
                         msgIndex === pinnedMessageMsgIndex
@@ -1390,7 +1390,7 @@ const Chat = ({
                       }
                     >
                       <Img_History
-                        key={index}
+                        key={`${msgIndex}-${index}`}
                         data={image_data}
                         msgIndex={msgIndex}
                         imgHistory={imgHistory}
