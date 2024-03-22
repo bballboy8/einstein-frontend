@@ -214,6 +214,7 @@ const Chat = ({
   const OnSetPinnedMessageMsgIndex = (index) => {
     setPinnedMessageMsgIndex(index);
   };
+  const [textAnimationIndex, setTextAnimationIndex] = useState(-1);
 
   const OnSetPinnedMessageMsgType = (value) => {
     setPinnedMessageMsgType(value);
@@ -513,7 +514,6 @@ const Chat = ({
           });
           setTextModel(textList.indexOf(response.data.data.type));
           setType(response.data.data.type);
-
           setChatHistory(response.data.data.history);
         });
     } else {
@@ -576,9 +576,10 @@ const Chat = ({
     console.log("text geenration start");
     setSwitchStatus(false);
     setChatStatus(true);
-    let textResponseData = [];
     let new_history = [...chatHistory];
     new_history.push([{ role: "user", content: value }, { role: "loading" }]);
+    const loadingIndex = chatHistroyID == "" ? 0 : new_history.length - 1;
+    setTextAnimationIndex(loadingIndex);
     setChatHistory(new_history);
     if (chatHistroyID == "") {
       let data = JSON.stringify({
@@ -590,22 +591,19 @@ const Chat = ({
       setChatTitle(value);
       setValue("");
       console.log("TExt generaate: data--> ", data);
+
       if (selected == "GPT-4") {
         axios
           .post(`${apiURL}/ai/gpt4`, data, {
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-4";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -632,16 +630,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-3.5";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -671,16 +665,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Gemini";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -707,16 +697,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Mistral";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -743,16 +729,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Perplexity";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -777,9 +759,9 @@ const Chat = ({
     } else {
       let pasthistory = [];
 
-      chatHistory.map((item) => {
-        let a = removeTypeAndPinnedField(item);
-        pasthistory.push(a);
+      chatHistory.forEach((item) => {
+        let newItem = removeTypeAndPinnedField({ ...item });
+        pasthistory.push(newItem);
       });
       const newData = chatHistory.map((arr) =>
         arr.map(({ role, content }) => ({ role, content }))
@@ -799,16 +781,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-4";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -825,16 +803,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-3.5";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -851,16 +825,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Gemini";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -877,16 +847,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Mistral";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -903,16 +869,12 @@ const Chat = ({
             headers: { "Content-Type": "application/json" },
           })
           .then((response) => {
-            const loadingIndex = new_history.findIndex(
-              (item) => item[1].role === "loading"
-            );
-
             if (loadingIndex !== -1) {
               // Create a new array with the updated item
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Perplexity";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -944,6 +906,9 @@ const Chat = ({
       });
       setChatTitle(value);
       setValue("");
+      const loadingIndex = new_history.findIndex(
+        (item) => item[1].role === "loading"
+      );
       console.log("Sending api data: ", data);
       if (imgSelected == "DALL-E") {
         axios
@@ -952,10 +917,6 @@ const Chat = ({
           })
           .then((response) => {
             if (response.data) {
-              const loadingIndex = new_history.findIndex(
-                (item) => item[1].role === "loading"
-              );
-
               if (loadingIndex !== -1) {
                 // Create a new array with the updated item
                 const updatedItem = [...new_history[loadingIndex]];
@@ -1018,10 +979,6 @@ const Chat = ({
           })
           .then((response) => {
             if (response.data) {
-              const loadingIndex = new_history.findIndex(
-                (item) => item[1].role === "loading"
-              );
-
               if (loadingIndex !== -1) {
                 // Create a new array with the updated item
                 const updatedItem = [...new_history[loadingIndex]];
@@ -1058,10 +1015,6 @@ const Chat = ({
           })
           .then((response) => {
             if (response.data) {
-              const loadingIndex = new_history.findIndex(
-                (item) => item[1].role === "loading"
-              );
-
               if (loadingIndex !== -1) {
                 // Create a new array with the updated item
                 const updatedItem = [...new_history[loadingIndex]];
@@ -1111,10 +1064,6 @@ const Chat = ({
           })
           .then((response) => {
             if (response.data) {
-              const loadingIndex = new_history.findIndex(
-                (item) => item[1].role === "loading"
-              );
-
               if (loadingIndex !== -1) {
                 // Create a new array with the updated item
                 const updatedItem = [...new_history[loadingIndex]];
@@ -1142,10 +1091,6 @@ const Chat = ({
           })
           .then((response) => {
             if (response.data) {
-              const loadingIndex = new_history.findIndex(
-                (item) => item[1].role === "loading"
-              );
-
               if (loadingIndex !== -1) {
                 // Create a new array with the updated item
                 const updatedItem = [...new_history[loadingIndex]];
@@ -1173,10 +1118,6 @@ const Chat = ({
           })
           .then((response) => {
             if (response.data) {
-              const loadingIndex = new_history.findIndex(
-                (item) => item[1].role === "loading"
-              );
-
               if (loadingIndex !== -1) {
                 // Create a new array with the updated item
                 const updatedItem = [...new_history[loadingIndex]];
@@ -1363,6 +1304,8 @@ const Chat = ({
                         setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
                         checkEditPinnedMessage={OnCheckEditPinnedMessage}
                         setModelType={OnSetModalType}
+                        setTextAnimationIndex={setTextAnimationIndex}
+                        textAnimationIndex={textAnimationIndex}
                       />
                     </span>
                   ))}
