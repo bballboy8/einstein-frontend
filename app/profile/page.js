@@ -20,9 +20,7 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [setting, setSetting] = useState(false);
   const [userData, setUserData] = useState({
-    username: "",
     full_name: "",
-    name: "",
     email: "",
     company_name: "",
     job_title: "",
@@ -192,19 +190,7 @@ const Index = () => {
               </p>
               <div className=" rounded-lg border-[0.5px] border-solid border-[#C2C2C2] px-6 py-3 max-w-[640px] w-full">
                 <p className="text-[#FFF] text-xs font-medium leading-4">
-                  Username*
-                </p>
-                <input
-                  className="text-[#FFF] outline-none bg-[rgba(47,55,62,0.00)] mt-1 w-full"
-                  defaultValue={userInfo.username}
-                  onChange={(e) =>
-                    setUserData({ ...userData, username: e.target.value })
-                  }
-                />
-              </div>
-              <div className=" rounded-lg border-[0.5px] border-solid border-[#C2C2C2] px-6 py-3 max-w-[640px] w-full">
-                <p className="text-[#FFF] text-xs font-medium leading-4">
-                  Name*
+                  Full Name*
                 </p>
                 <input
                   className="text-[#FFF] outline-none bg-[rgba(47,55,62,0.00)] mt-1 w-full"

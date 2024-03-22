@@ -3,12 +3,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
-
+import InputField from "../ui/InputField";
 import { apiURL } from "@/config";
 import {
   NotificationContainer,
   NotificationManager,
 } from "react-notifications";
+import passwordValidator from "password-validator";
+
 // Reusable Button Component
 const RegisterButton = ({
   imageUrl,
@@ -192,20 +194,23 @@ const RegistrationForm = ({ onClose }) => {
   const [formErrors, setFormErrors] = useState({});
   const router = useRouter();
   const [userData, setUserData] = useState({
-    firstname: "",
-    lastname: "",
-    username: "",
+    fullname: "",
     email: "",
     password: "",
     confirmpassword: "",
   });
   const [submitted, setSubmitted] = useState(false); // Track form submission
 
-  useEffect(() => {
-    if (submitted) {
-      validateForm(userData);
-    }
-  }, [userData]); // Trigger validation whenever userData changes
+  const schema = new passwordValidator();
+
+  // Add properties to it
+  schema
+    .is()
+    .min(8) // Minimum length 8
+    .has()
+    .uppercase() // Must have uppercase letters
+    .has()
+    .symbols();
 
   // Signup Logic Functions
   const ValidateEmail = (email) => {
@@ -214,86 +219,86 @@ const RegistrationForm = ({ onClose }) => {
     return email.match(validRegex);
   };
 
-  const validateForm = (userData) => {
-    let errors = {};
-    if (!userData.firstname.trim()) {
-      errors.firstname = "First Name is required";
-    } else if (userData.firstname.trim().length < 3) {
-      errors.firstname = "First Name must be at least 3 characters long";
+  const validateForm = () => {
+    if (userData.fullname == "") {
+      NotificationManager.error("Full Name is required.", "Error", 2000);
+      return false;
+    } else if (userData.fullname.trim().length < 3) {
+      NotificationManager.error(
+        "Full Name must be at least 3 characters long.",
+        "Error",
+        2000
+      );
+      return false;
     }
-    if (!userData.lastname.trim()) {
-      errors.lastname = "Last Name is required";
-    } else if (userData.lastname.trim().length < 3) {
-      errors.lastname = "Last Name must be at least 3 characters long";
-    }
-    if (!userData.username.trim()) {
-      errors.username = "Username is required";
-    } else if (userData.username.trim().length < 3) {
-      errors.username = "Username must be at least 3 characters long";
-    }
+
     if (!userData.email.trim()) {
-      errors.email = "Email is required";
+      NotificationManager.error("Email is required.", "Error", 2000);
+      return false;
     } else if (!ValidateEmail(userData.email)) {
-      errors.email = "Email is invalid";
+      NotificationManager.error("Email is invalid.", "Error", 2000);
+      return false;
     }
     if (!userData.password.trim()) {
-      errors.password = "Password is required";
-    } else if (userData.password.trim().length < 6) {
-      errors.password = "Password must be at least 6 characters long";
+      NotificationManager.error("Password is required.", "Error", 2000);
+      return false;
+    } else if (!schema.validate(userData.password)) {
+      NotificationManager.error(
+        "Password must contain at least 8 characters including uppercase letters, lowercase letters, special characters, and digits. For example: MyP@ssw0rd, 123$Secure, StrongPass#99.",
+        "Error",
+        2000
+      );
+      return false;
     }
     if (!userData.confirmpassword.trim()) {
-      errors.confirmpassword = "Confirm Password is required";
+      NotificationManager.error("Confirm Password is required", "Error", 2000);
+      return false;
     } else if (userData.confirmpassword !== userData.password) {
-      errors.confirmpassword = "Passwords do not match";
+      NotificationManager.error("Passwords do not match", "Error", 2000);
+      return false;
     }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+
+    return true;
   };
 
   const SignUp = (userData) => {
     console.log("userData", userData);
     setSubmitted(true);
-    if (validateForm(userData)) {
-      console.log("Form is valid, proceed with signup");
-      // Call your signup API endpoint here
-      axios
-        .post(`${apiURL}/auth/signup`, userData, {
-          headers: { "Content-Type": "application/json" },
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            NotificationManager.success(response.data.message);
-            setTimeout(() => {
-              if (response.data.status) {
-                localStorage.setItem("token", response.data.data.token);
-                localStorage.setItem("userID", response.data.data.user_id);
-                localStorage.setItem("email", response.data.data.email);
-                router.push("/");
-              }
-            }, 2000); // 3000 milliseconds = 3 seconds
-          } else {
-            NotificationManager.error(response.data.message);
-          }
-        })
-        .catch((error) => {
-          if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
-            console.error("Server error:", error.response.data);
-            NotificationManager.error(error.response.data.message);
-          } else if (error.request) {
-            // The request was made but no response was received
-            console.error("No response from server:", error.request);
-            NotificationManager.error("No response from server");
-          } else {
-            // Something happened in setting up the request that triggered an Error
-            console.error("Error:", error.message);
-            NotificationManager.error("An error occurred: " + error.message);
-          }
-        });
-    } else {
-      console.log("Form contains errors, cannot proceed with signup");
-    }
+    axios
+      .post(`${apiURL}/auth/signup`, userData, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          NotificationManager.success(response.data.message);
+          setTimeout(() => {
+            if (response.data.status) {
+              localStorage.setItem("token", response.data.data.token);
+              localStorage.setItem("userID", response.data.data.user_id);
+              localStorage.setItem("email", response.data.data.email);
+              router.push("/");
+            }
+          }, 2000); // 3000 milliseconds = 3 seconds
+        } else {
+          NotificationManager.error(response.data.message);
+        }
+      })
+      .catch((error) => {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error("Server error:", error.response.data);
+          NotificationManager.error(error.response.data.message);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error("No response from server:", error.request);
+          NotificationManager.error("No response from server");
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error("Error:", error.message);
+          NotificationManager.error("An error occurred: " + error.message);
+        }
+      });
   };
 
   const handleInputChange = (e) => {
@@ -305,8 +310,11 @@ const RegistrationForm = ({ onClose }) => {
     });
   };
 
-  const handleSubmit = () => {
-    SignUp(userData);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      SignUp(userData);
+    }
   };
 
   return (
@@ -322,25 +330,11 @@ const RegistrationForm = ({ onClose }) => {
         Register
       </h1>
       <InputField
-        label="First Name"
-        name="firstname"
-        value={userData.firstname}
+        label="Full Name"
+        name="fullname"
+        value={userData.fullname}
         onChange={handleInputChange}
-        error={formErrors.firstname}
-      />
-      <InputField
-        label="Last Name"
-        name="lastname"
-        value={userData.lastname}
-        onChange={handleInputChange}
-        error={formErrors.lastname}
-      />
-      <InputField
-        label="Username"
-        name="username"
-        value={userData.username}
-        onChange={handleInputChange}
-        error={formErrors.username}
+        error={formErrors.fullname}
       />
       <InputField
         label="E-mail"
@@ -367,12 +361,13 @@ const RegistrationForm = ({ onClose }) => {
         error={formErrors.confirmpassword}
       />
       <button
-        className={`justify-center items-center px-16 py-2.5 mt-9 text-white rounded-xl bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300`}
+        className={`justify-center items-center px-16 py-2 mt-9 text-white rounded-xl bg-gradient-to-r from-[#7B88FF] to-[#64D0FF] hover:bg-blue-700 focus:ring-4 focus:ring-blue-300`}
         type="button"
         onClick={handleSubmit}
       >
         Register
       </button>
+
       <div
         tabIndex="0"
         role="button"
@@ -382,26 +377,6 @@ const RegistrationForm = ({ onClose }) => {
         <span style={{ fontSize: "0.8rem" }}>Have account? Sign In</span>
       </div>
     </form>
-  );
-};
-
-const InputField = ({ label, type, name, value, onChange, error }) => {
-  return (
-    <div className="flex flex-col mt-3">
-      <input
-        type={type}
-        id={name}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={label}
-        className={`mt-3 px-3 py-1.5 rounded-lg border border-white focus:outline-none focus:border-blue-500 text-white bg-transparent ${
-          error ? "border-red-500" : ""
-        }`}
-        style={{ color: "white", width: "400px" }}
-      />
-      {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
-    </div>
   );
 };
 

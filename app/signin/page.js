@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { apiURL } from "@/config";
 import { useGoogleLogin } from "@react-oauth/google";
+import InputField from "../ui/InputField";
+import passwordValidator from "password-validator";
 
 // Reusable Button Component
 const SignInButton = ({
@@ -171,6 +173,20 @@ export default SignInOptions;
 
 function EmailSignInForm({ onClose }) {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const schema = new passwordValidator();
+
+  // Add properties to it
+  schema
+    .is()
+    .min(8) // Minimum length 8
+    .has()
+    .uppercase() // Must have uppercase letters
+    .has()
+    .symbols();
 
   const SignIn = (logData) => {
     axios
@@ -199,21 +215,35 @@ function EmailSignInForm({ onClose }) {
       });
   };
 
+  const validateForm = () => {
+    if (email == "") {
+      NotificationManager.error("Email is required.", "Error", 2000);
+      return false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      NotificationManager.error("Invalid Email.", "Error", 2000);
+      return false;
+    }
+
+    if (password === "") {
+      NotificationManager.error("Password is required.", "Error", 2000);
+      return false;
+    }
+    // else
+    // if (!schema.validate(password)) {
+    //   errors.password =
+    //     "Password must contain at least 8 characters including uppercase letters, lowercase letters, special characters, and digits. For example: MyP@ssw0rd, 123$Secure, StrongPass#99";
+    // }
+
+    return true;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const emailOrUsername = formData.get("email");
-    const password = formData.get("password");
+    if (validateForm()) {
+      const logData = { email, password }; // If it's a username
 
-    // Check if the entered value is an email address or username
-    const isEmail = emailOrUsername.includes("@");
-    const logData = isEmail
-      ? { email: emailOrUsername, password: password } // If it's an email
-      : { username: emailOrUsername, password: password }; // If it's a username
-
-    console.log("Form Data:", logData); // Log the data being sent to the server
-
-    SignIn(logData);
+      SignIn(logData);
+    }
   };
 
   return (
@@ -221,7 +251,7 @@ function EmailSignInForm({ onClose }) {
       className="flex flex-col px-6 pt-6 pb-9 text-base font-medium text-white rounded-xl bg-zinc-800 max-w-[400px]"
       onSubmit={handleSubmit}
     >
-      <header className="flex flex-col self-end max-w-full text-5xl text-center w-[252px]">
+      <header className="flex flex-col max-w-full text-5xl text-center">
         <img
           loading="lazy"
           src="svg/close.svg"
@@ -235,34 +265,36 @@ function EmailSignInForm({ onClose }) {
         <label htmlFor="email" className="sr-only">
           E-mail
         </label>
-        <input
-          type="text"
-          id="email"
+        <InputField
+          label="E-mail"
+          type="email"
           name="email"
           required
           placeholder="Email or Username"
-          className="mt-3 px-3 py-1.5 rounded-lg border border-white focus:outline-none focus:border-blue-500 text-white bg-transparent"
           aria-label="Email or Username"
+          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <div className="flex flex-col mt-5">
+      <div className="flex flex-col mt-0">
         <label htmlFor="password" className="sr-only">
           Password
         </label>
-        <input
+
+        <InputField
+          label="Password"
           type="password"
-          id="password"
           name="password"
           required
           placeholder="Password"
-          className="mt-3 px-3 py-1.5 rounded-lg border border-white focus:outline-none focus:border-blue-500 text-white bg-transparent"
           aria-label="Password"
+          onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      <div className="flex justify-center items-center">
+
+      <div className="flex flex-col mt-5">
         <button
           type="submit"
-          className="px-16 py-2.5 mt-7 whitespace-nowrap rounded-xl bg-blue-500 hover:bg-blue-700 text-white"
+          className="px-16 py-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#7B88FF] to-[#64D0FF] hover:bg-blue-700 text-white"
         >
           Sign in
         </button>

@@ -82,7 +82,7 @@ const ContextMenu = ({
           setUnpinnedMessageIndex(msgIndex, index);
         }
       });
-
+    onClose();
     // Function to hide pinned message when close button is clicked
   };
 
@@ -102,7 +102,7 @@ const ContextMenu = ({
       className="absolute z-10  border-gray-300 rounded shadow"
       style={{ top: position.y, left: position.x }}
     >
-      <div className="flex flex-col px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[170px]">
+      <div className="flex flex-col min-w-[180px] px-3.5 py-2.5 text-sm text-white rounded-3xl border border-solid bg-neutral-900 border-zinc-800 max-w-[200px]">
         {contextedMenuPinnedStatus ? (
           <div
             className="flex gap-3.5 font-nasalization"
@@ -116,7 +116,7 @@ const ContextMenu = ({
             <img
               loading="lazy"
               src="/Close.png"
-              className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[33px] mt-[10px]"
+              className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[33px] mt-[0px]"
             />
             Unpin Message
           </div>
