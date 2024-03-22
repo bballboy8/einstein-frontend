@@ -8,6 +8,7 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import ReactMarkDown from "../Markdown";
 import { apiURL } from "@/config";
 import { useDisclosure } from "@nextui-org/react";
+import { Typewriter } from "../chat/typeWriter";
 
 const Text_History = ({
   data,
@@ -30,6 +31,8 @@ const Text_History = ({
   setPinnedMessageMsgType,
   checkEditPinnedMessage,
   setModelType,
+  setTextAnimationIndex,
+  textAnimationIndex,
 }) => {
   const [tabSelected, setTabSelected] = useState(data.type);
   const [copyStatus, setCopyStatus] = useState(false);
@@ -139,6 +142,7 @@ const Text_History = ({
         // Remove loading message when response is received
         let updatedChatHistory = response.data.data;
         setChatHistory(updatedChatHistory);
+        setTextAnimationIndex(msgIndex);
       })
       .catch((error) => {
         console.error("Error editing message:", error);
@@ -192,6 +196,7 @@ const Text_History = ({
         chatHistory[msgIndex][index]["type"] = data.new_type;
         chatHistory[msgIndex][index]["role"] = "assistant";
         setLoading(false);
+        setTextAnimationIndex(msgIndex);
         setChatHistory(chatHistory);
       });
   };
@@ -249,6 +254,7 @@ const Text_History = ({
         a[msgIndex][1]["content"] = response.data.data;
         a[msgIndex][1]["role"] = "assistant";
         setLoading(false);
+        setTextAnimationIndex(msgIndex);
         setChatHistory(a);
         setModelType(chatHistory[i][1].type);
       });
@@ -549,7 +555,11 @@ const Text_History = ({
                 className={`mt-4 bg-[#23272B] max-w-max rounded-[20px] py-3 px-6`}
                 onContextMenu={(e) => handleContextMenu(e, index, data.pinned)}
               >
-                <ReactMarkDown data={data.content} />
+                {textAnimationIndex == msgIndex ? (
+                  <Typewriter text={data.content} delay={15} />
+                ) : (
+                  <ReactMarkDown data={data.content} />
+                )}
               </div>
               <div className="flex flex-row w-full justify-between pl-7 pr-10 mt-3">
                 <div className="flex flex-row gap-6">
