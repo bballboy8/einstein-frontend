@@ -509,7 +509,6 @@ const Chat = ({
           setTextModel(textList.indexOf(response.data.data.type));
           setType(response.data.data.type);
           setChatHistory(response.data.data.history);
-          setTextAnimationIndex(-1);
         });
     } else {
       console.log("start img id data");
@@ -630,7 +629,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-3.5";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -665,7 +664,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Gemini";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -697,7 +696,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Mistral";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -729,7 +728,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Perplexity";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -754,9 +753,9 @@ const Chat = ({
     } else {
       let pasthistory = [];
 
-      chatHistory.map((item) => {
-        let a = removeTypeAndPinnedField(item);
-        pasthistory.push(a);
+      chatHistory.forEach((item) => {
+        let newItem = removeTypeAndPinnedField({ ...item });
+        pasthistory.push(newItem);
       });
       const newData = chatHistory.map((arr) =>
         arr.map(({ role, content }) => ({ role, content }))
@@ -781,7 +780,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-4";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -803,7 +802,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "GPT-3.5";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -825,7 +824,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Gemini";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -847,7 +846,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Mistral";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];
@@ -869,7 +868,7 @@ const Chat = ({
               const updatedItem = [...new_history[loadingIndex]];
               updatedItem[1].role = "assistant";
               updatedItem[1].content = response.data.data;
-              updatedItem[1].type = response.data.type;
+              updatedItem[1].type = "Perplexity";
 
               // Create a new history array with the updated item
               const updatedHistory = [...new_history];

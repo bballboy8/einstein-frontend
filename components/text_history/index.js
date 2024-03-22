@@ -149,23 +149,6 @@ const Text_History = ({
       });
   };
 
-  // const getDataByType = (id, i) => {
-  //   axios
-  //     .get(`${apiURL}/ai/gethistoryByID/${id}`, {
-  //       headers: { "Content-Type": "application/json" },
-  //     })
-  //     .then((response) => {
-  //       let a = [...chatHistory];
-  //       let b = [];
-  //       response.data.data.history[(i - 1) / 2].map((item, index) => {
-  //         if (item.type == tabSelected) b.push(item);
-  //       });
-  //       a[i] = b[0];
-  //       setLoading(false);
-  //       setChatHistory(a);
-  //     });
-  // };
-
   const handleLoading = () => {
     // Handling loading state
     setLoading(true);
@@ -225,10 +208,12 @@ const Text_History = ({
     }
   };
 
-  const Regenerate = (i, chatHistroyID) => {
+  const Regenerate = (i, chatHistroyID, typeOfModel) => {
     setLoading(true);
     setID(i);
     let pasthistory = [];
+    console.log("typeOfModel::: ", typeOfModel);
+    console.log("chatHistory: ", chatHistory);
     chatHistory.slice(0, i + 1).map((item) => {
       let data = item.slice(0, -1); // Remove the last element of the array
       pasthistory.push(data);
@@ -236,7 +221,7 @@ const Text_History = ({
 
     let data = {
       historyData: pasthistory,
-      type: chatHistory[i][1].type,
+      type: typeOfModel,
       index: i,
       id: chatHistroyID,
     };
@@ -325,6 +310,10 @@ const Text_History = ({
     setModelType(outerText);
     Summarize(sumData, msgIndex, index);
   };
+  function handleTypingEnd() {
+    // Reset textAnimationIndex when typing ends
+    setTextAnimationIndex(-1);
+  }
   return (
     <div key={index} className="flex flex-col w-full">
       {/* user compannent */}
@@ -556,7 +545,11 @@ const Text_History = ({
                 onContextMenu={(e) => handleContextMenu(e, index, data.pinned)}
               >
                 {textAnimationIndex == msgIndex ? (
-                  <Typewriter text={data.content} delay={15} />
+                  <Typewriter
+                    text={data.content}
+                    delay={15}
+                    onTypingEnd={handleTypingEnd}
+                  />
                 ) : (
                   <ReactMarkDown data={data.content} />
                 )}
@@ -749,7 +742,9 @@ const Text_History = ({
                       alt=""
                       width={16}
                       height={21}
-                      onClick={() => Regenerate(msgIndex, chatHistroyID)}
+                      onClick={() =>
+                        Regenerate(msgIndex, chatHistroyID, data.type)
+                      }
                       src={"svg/regen.svg"}
                       className="cursor-pointer"
                     />

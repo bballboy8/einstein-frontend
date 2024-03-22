@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactMarkDown from "../Markdown";
 
-const Typewriter = ({ text, delay }) => {
+const Typewriter = ({ text, delay, onTypingEnd }) => {
   const [currentText, setCurrentText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -14,6 +14,9 @@ const Typewriter = ({ text, delay }) => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
       }, delay);
       return () => clearTimeout(timeout);
+    } else {
+      console.log("This is called to stop animation!");
+      onTypingEnd();
     }
   }, [currentIndex, delay, text]);
 
