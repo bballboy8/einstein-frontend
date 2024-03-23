@@ -580,19 +580,6 @@ const Img_History = ({
                 {imgStatus.map(
                   (item, index) =>
                     item && (
-                      // <Tooltip
-                      //   placement="right"
-                      //   content={
-                      //     <div className="text-base text-[#FFF] font-helvetica font-normal">
-                      //       {tooltipModalContent[index]}
-                      //     </div>
-                      //   }
-                      //   classNames={{
-                      //     content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
-                      //   }}
-                      //   delay={0}
-                      //   closeDelay={0}
-                      // >
                       <Tab
                         key={imageList[index]}
                         title={<p>{imageList[index]}</p>}

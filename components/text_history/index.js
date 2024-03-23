@@ -152,30 +152,6 @@ const Text_History = ({
     }
   }, []);
 
-  const voteFunc = (i) => {
-    setID(i);
-    if (vote == true) {
-      setVote(false);
-    } else {
-      setVote(true);
-      if (deVote == true) {
-        setDeVote(false);
-      }
-    }
-  };
-
-  const devoteFunc = (i) => {
-    setID(i);
-    if (deVote == true) {
-      setDeVote(false);
-    } else {
-      setDeVote(true);
-      if (vote == true) {
-        setVote(false);
-      }
-    }
-  };
-
   const Regenerate = (i, chatHistoryID, typeOfModel) => {
     setLoading(true);
     setID(i);
@@ -604,95 +580,7 @@ const Text_History = ({
                       </Tooltip>
                     )}
                   </CopyToClipboard>
-                  <Tooltip
-                    content={<p className="text-[#FFF]">Good response</p>}
-                    showArrow
-                    placement="bottom"
-                    delay={0}
-                    closeDelay={0}
-                    className=""
-                    classNames={{
-                      base: ["before:bg-[##2E353C]"],
-                      content: [
-                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
-                      ],
-                    }}
-                    motionProps={{
-                      variants: {
-                        exit: {
-                          opacity: 0,
-                          transition: {
-                            duration: 0.1,
-                            ease: "easeIn",
-                          },
-                        },
-                        enter: {
-                          opacity: 1,
-                          transition: {
-                            duration: 0.15,
-                            ease: "easeOut",
-                          },
-                        },
-                      },
-                    }}
-                  >
-                    <Image
-                      alt=""
-                      width={19}
-                      height={18}
-                      onClick={() => voteFunc(index)}
-                      src={` ${
-                        id == index && vote == true
-                          ? "svg/voteAction.svg"
-                          : "svg/vote.svg"
-                      }`}
-                      className="cursor-pointer"
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    content={<p className="text-[#FFF]">Bad response</p>}
-                    showArrow
-                    placement="bottom"
-                    delay={0}
-                    closeDelay={0}
-                    classNames={{
-                      base: ["before:bg-[##2E353C]"],
-                      content: [
-                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
-                      ],
-                    }}
-                    motionProps={{
-                      variants: {
-                        exit: {
-                          opacity: 0,
-                          transition: {
-                            duration: 0.1,
-                            ease: "easeIn",
-                          },
-                        },
-                        enter: {
-                          opacity: 1,
-                          transition: {
-                            duration: 0.15,
-                            ease: "easeOut",
-                          },
-                        },
-                      },
-                    }}
-                  >
-                    <Image
-                      alt=""
-                      width={20}
-                      height={19}
-                      onClick={() => devoteFunc(index)}
-                      src={` ${
-                        id == index && deVote == true
-                          ? "svg/devoteAction.svg"
-                          : "svg/devote.svg"
-                      }`}
-                      className="cursor-pointer"
-                    />
-                  </Tooltip>
+
                   <Tooltip
                     content={<p className="text-[#FFF]">Like Response</p>}
                     showArrow
