@@ -80,6 +80,7 @@ const RegistrationOptions = () => {
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("userID", response.data.user_id);
                 localStorage.setItem("email", response.data.email);
+                localStorage.setItem("fullname", response.data.name);
                 router.push("/");
               }
             })
@@ -276,6 +277,7 @@ const RegistrationForm = ({ onClose }) => {
               localStorage.setItem("token", response.data.data.token);
               localStorage.setItem("userID", response.data.data.user_id);
               localStorage.setItem("email", response.data.data.email);
+              localStorage.setItem("fullname", response.data.name);
               router.push("/");
             }
           }, 2000); // 3000 milliseconds = 3 seconds
