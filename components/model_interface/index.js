@@ -37,7 +37,7 @@ const Model_Interface = () => {
                 4 models
               </div>
               <div className="mt-[54px] max-mxl:mt-[20px] ml-11 max-msm:ml-8">
-                <Button radius="full" color="primary">
+                <Button radius="full" color="primary" className="bg-[#0a84ff]">
                   Learn More
                   <Image alt="" width={16} height={16} src={"svg/export.svg"} />
                 </Button>
@@ -52,7 +52,7 @@ const Model_Interface = () => {
                 user-friendly.
               </div>
               <div className="mt-[54px] ml-11 mb-[58px]">
-                <Button radius="full" color="primary">
+                <Button radius="full" color="primary" className="bg-[#0a84ff]">
                   Learn More{" "}
                   <Image alt="" width={16} height={16} src={"svg/export.svg"} />
                 </Button>
@@ -67,7 +67,7 @@ const Model_Interface = () => {
                 models.
               </div>
               <div className="mt-[54px] ml-11 mb-[58px]">
-                <Button radius="full" color="primary">
+                <Button radius="full" color="primary" className="bg-[#0a84ff]">
                   Learn More{" "}
                   <Image alt="" width={16} height={16} src={"svg/export.svg"} />
                 </Button>
@@ -82,7 +82,7 @@ const Model_Interface = () => {
                 models
               </div>
               <div className="mt-[54px] ml-11 mb-[58px]">
-                <Button radius="full" color="primary">
+                <Button radius="full" color="primary" className="bg-[#0a84ff]">
                   Learn More{" "}
                   <Image alt="" width={16} height={16} src={"svg/export.svg"} />
                 </Button>
@@ -580,7 +580,7 @@ const Model_Interface = () => {
                       color="primary"
                       size="sm"
                       radius="full"
-                      className="px-10 py-2"
+                      className="px-10 py-2 bg-[#0a84ff]"
                     >
                       Text
                     </Button>
@@ -588,7 +588,7 @@ const Model_Interface = () => {
                       color="primary"
                       size="sm"
                       radius="full"
-                      className="px-10"
+                      className="px-10 bg-[#0a84ff]"
                     >
                       Image
                     </Button>
@@ -610,7 +610,7 @@ const Model_Interface = () => {
                       color="primary"
                       size="sm"
                       radius="full"
-                      className="px-10 py-2"
+                      className="px-10 py-2 bg-[#0a84ff]"
                     >
                       Text
                     </Button>
@@ -618,7 +618,7 @@ const Model_Interface = () => {
                       color="primary"
                       size="sm"
                       radius="full"
-                      className="px-10"
+                      className="px-10 bg-[#0a84ff]"
                     >
                       Image
                     </Button>
@@ -640,7 +640,7 @@ const Model_Interface = () => {
                       color="primary"
                       size="sm"
                       radius="full"
-                      className="px-10 py-2"
+                      className="px-10 py-2 bg-[#0a84ff]"
                     >
                       Text
                     </Button>
@@ -648,7 +648,7 @@ const Model_Interface = () => {
                       color="primary"
                       size="sm"
                       radius="full"
-                      className="px-10"
+                      className="px-10 bg-[#0a84ff]"
                     >
                       Image
                     </Button>

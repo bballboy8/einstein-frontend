@@ -11,16 +11,17 @@ export default function Home() {
   const { settingModel, setSettingModel } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
   const [chatStatus, setChatStatus] = useState(false);
-  const [chatHistroyID, setChatHistoryID] = useState("");
+  const [chatHistoryID, setChatHistoryID] = useState("");
   const [imgHistoryID, setImgHistoryID] = useState("");
   const [chatHistroyData, setChatHistoryData] = useState([]);
   const [imgHistoryData, setImgHistoryData] = useState([]);
   const [historySideData, setHistorySideData] = useState([]);
-  const [chatTitle, setChatTitle] = useState("Chat Title");
+  const [chatTitle, setChatTitle] = useState("New Chat");
   const [mobileStatus, setMobileStatus] = useState(false);
   const [userActive, setUserActive] = useState(false);
   const [clickChat, setClickChat] = useState(false);
   const [imageModel, setImageModel] = useState(false);
+  const [fullName, setFullName] = useState("");
 
   const NewChat = () => {
     setToggleStatus(1);
@@ -30,7 +31,7 @@ export default function Home() {
     setChatHistoryData([]);
     setImgHistoryData([]);
     setSettingModel(false);
-    setChatTitle("Chat Title");
+    setChatTitle("New Chat");
   };
 
   return (
@@ -63,7 +64,7 @@ export default function Home() {
         />
         {toggleStatus == 1 ? (
           <Chat
-            chatHistroyID={chatHistroyID}
+            chatHistoryID={chatHistoryID}
             historySideData={historySideData}
             setHistorySideData={setHistorySideData}
             setChatStatus={setChatStatus}
@@ -77,6 +78,8 @@ export default function Home() {
             imgHistoryID={imgHistoryID}
             setImgHistoryID={setImgHistoryID}
             imgHistoryData={imgHistoryData}
+            fullName={fullName}
+            setFullName={setFullName}
           />
         ) : (
           <Model_Interface />

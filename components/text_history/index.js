@@ -13,7 +13,7 @@ import { Typewriter } from "../chat/typeWriter";
 const Text_History = ({
   data,
   chatHistory,
-  chatHistroyID,
+  chatHistoryID,
   id,
   msgIndex,
   index,
@@ -40,6 +40,13 @@ const Text_History = ({
   const [vote, setVote] = useState(false);
   const [deVote, setDeVote] = useState(false);
   const [modelList, setModelList] = useState([
+    "GPT-3.5",
+    "GPT-4",
+    "Gemini",
+    "Perplexity",
+    "Mistral",
+  ]);
+  const [tooltipModelList, setTooltipModelList] = useState([
     "GPT-3.5",
     "GPT-4",
     "Gemini",
@@ -94,59 +101,41 @@ const Text_History = ({
 
   const submitEdit = (index, msgIndex) => {
     console.log("Submit Edit Clicked! Now call API!");
+
     const updatedChatHistory = [...chatHistory];
     updatedChatHistory[msgIndex][index].content = editingMessage;
 
     const modelType = updatedChatHistory[msgIndex][1].type;
     setModelType(modelType);
-    console.log("Editing message for model; ", modelType);
-    updatedChatHistory[msgIndex].splice(index + 1); // Remove messages after the edited message
-    updatedChatHistory.splice(msgIndex + 1); // Remove messages after the edited message
+    console.log("Editing message for model: ", modelType);
 
-    let pasthistory = [];
-    updatedChatHistory.forEach((item) => {
-      let data = [...item]; // Create a shallow copy of the item
-      pasthistory.push(data);
-    });
+    updatedChatHistory[msgIndex].splice(index + 1);
+    updatedChatHistory.splice(msgIndex + 1);
 
-    let sumData = {
+    const pastHistory = updatedChatHistory.map((item) => [...item]);
+
+    const sumData = {
       type: modelType,
-      history: pasthistory,
-      id: chatHistroyID,
+      history: pastHistory,
+      id: chatHistoryID,
       number: (index - 1) / 2,
       userID: localStorage.getItem("userID"),
     };
 
-    // Add loading message to indicate API call is in progress
     updatedChatHistory[msgIndex].push({ role: "loading" });
     setChatHistory(updatedChatHistory);
-
-    // if (
-    //   updatedChatHistory[msgIndex][index].hasOwnProperty("pinned") &&
-    //   updatedChatHistory[msgIndex][index].pinned === true
-    // ) {
-    //   console.log("piinned message: ");
-    //   // The key "pinned" exists and its value is true
-    //   onSetPinnedMessageIndex(msgIndex, index);
-    // }
-
     checkEditPinnedMessage(msgIndex, index, "text", editingMessage);
 
-    // Mocking API call, replace it with your actual API call
     axios
-      .post(`${apiURL}/ai/edit`, sumData, {
+      .post(`${apiURL}/ai/edit`, JSON.stringify(sumData), {
         headers: { "Content-Type": "application/json" },
       })
       .then((response) => {
         setLoading(false);
-        // Remove loading message when response is received
-        let updatedChatHistory = response.data.data;
-        setChatHistory(updatedChatHistory);
+        setChatHistory(response.data.data);
         setTextAnimationIndex(msgIndex);
       })
-      .catch((error) => {
-        console.error("Error editing message:", error);
-      });
+      .catch((error) => console.error(error));
   };
 
   const handleLoading = () => {
@@ -162,27 +151,6 @@ const Text_History = ({
       autoResizeTextarea(textareaRef.current);
     }
   }, []);
-
-  const Summarize = (data, msgIndex, index) => {
-    // let chatHistoryCopy = [...chatHistory];
-    // let slicedChatHistory = chatHistory.slice(0, msgIndex);
-    chatHistory[msgIndex][index]["role"] = "loading";
-    // setChatHistory(slicedChatHistory);
-    setChatHistory(chatHistory);
-    setLoading(true);
-    axios
-      .post(`${apiURL}/ai/summarize`, data, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        chatHistory[msgIndex][index]["content"] = response.data.data;
-        chatHistory[msgIndex][index]["type"] = data.new_type;
-        chatHistory[msgIndex][index]["role"] = "assistant";
-        setLoading(false);
-        setTextAnimationIndex(msgIndex);
-        setChatHistory(chatHistory);
-      });
-  };
 
   const voteFunc = (i) => {
     setID(i);
@@ -208,7 +176,7 @@ const Text_History = ({
     }
   };
 
-  const Regenerate = (i, chatHistroyID, typeOfModel) => {
+  const Regenerate = (i, chatHistoryID, typeOfModel) => {
     setLoading(true);
     setID(i);
     let pasthistory = [];
@@ -223,7 +191,7 @@ const Text_History = ({
       historyData: pasthistory,
       type: typeOfModel,
       index: i,
-      id: chatHistroyID,
+      id: chatHistoryID,
     };
     console.log("regenrate data", data);
     chatHistory[msgIndex][1]["role"] = "loading";
@@ -238,17 +206,13 @@ const Text_History = ({
         let a = [...chatHistory];
         a[msgIndex][1]["content"] = response.data.data;
         a[msgIndex][1]["role"] = "assistant";
+        a[msgIndex][1]["type"] = typeOfModel;
         setLoading(false);
         setTextAnimationIndex(msgIndex);
         setChatHistory(a);
         setModelType(chatHistory[i][1].type);
       });
   };
-
-  function removeTypeField(obj) {
-    delete obj.type;
-    return obj;
-  }
 
   const replyFunction = (index) => {
     setBlur(true);
@@ -286,30 +250,50 @@ const Text_History = ({
     setChatHistory(updatedChatHistory);
   };
 
-  const onChangeTabSelected = (outerText) => {
+  const onChangeTabSelected = (outerText, chatHistoryID) => {
     setTabSelected(outerText);
-    let pasthistory = [];
-
-    chatHistory.slice(0, msgIndex + 1).map((item) => {
-      let data = item.slice(0, -1); // Remove the last element of the array
-      data.map((msg, j) => {
-        pasthistory.push(msg);
-      });
-    });
+    const pastHistory = chatHistory
+      .slice(0, msgIndex + 1)
+      .flatMap((item) => item.slice(0, -1));
 
     let sumData = {
       old_type: chatHistory[msgIndex][1]["type"],
       new_type: outerText,
-      history: [...pasthistory],
-      id: chatHistroyID,
+      history: pastHistory,
+      id: chatHistoryID,
       number: msgIndex,
       userID: localStorage.getItem("userID"),
     };
+    console.log("sumData:", sumData);
     setSwitchStatus(true);
-    setID(chatHistroyID);
+    setID(chatHistoryID);
     setModelType(outerText);
     Summarize(sumData, msgIndex, index);
   };
+  const Summarize = (data, msgIndex, index) => {
+    const updatedChatHistory = [...chatHistory];
+    updatedChatHistory[msgIndex][index]["role"] = "loading";
+    setChatHistory(updatedChatHistory);
+    setLoading(true);
+
+    axios
+      .post(`${apiURL}/ai/summarize`, data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        updatedChatHistory[msgIndex][index]["content"] = response.data.data;
+        updatedChatHistory[msgIndex][index]["type"] = data.new_type;
+        updatedChatHistory[msgIndex][index]["role"] = "assistant";
+
+        setLoading(false);
+        setTextAnimationIndex(msgIndex);
+        setChatHistory(updatedChatHistory);
+      })
+      .catch((error) => {
+        console.error("Error in summarization:", error);
+      });
+  };
+
   function handleTypingEnd() {
     // Reset textAnimationIndex when typing ends
     setTextAnimationIndex(-1);
@@ -318,33 +302,33 @@ const Text_History = ({
     <div key={index} className="flex flex-col w-full">
       {/* user compannent */}
       {data.role === "user" ? (
-        <div className={`flex justify-end w-full mb-4 pr-5 max-mxl:pr-0`}>
+        <div className={`flex justify-end w-full mb-0 pr-5 max-mxl:pr-0`}>
           {editModeIndex === index ? (
             <div className="flex flex-col mt-4">
               <textarea
                 value={editingMessage}
                 onChange={handleEditChange}
-                className="px-3 py-2 border border-white rounded-md w-auto focus:outline-none focus:ring focus:border-blue-300 resize-none text-white bg-transparent"
+                className="px-7 py-4 border border-[#0a83ff] rounded-[32px] w-auto focus:outline-none focus:ring focus:border-[#0a83ff] resize-none  bg-transparent text-lg max-msm:text-[15px] text-[#FFF] font-helvetica font-normal tracking-[0.2px] leading-[28.8px]"
                 style={{
                   minWidth: "600px",
                   maxWidth: "100%",
-                  minHeight: "100px",
+                  // minHeight: "100px",
                 }}
                 ref={textareaRef}
               />
               <div className="mt-3">
                 <div className="flex  justify-end items-center">
                   <button
-                    className="px-2 py-1 whitespace-nowrap rounded-md bg-blue-500 hover:bg-blue-700 text-white mr-2"
+                    className="px-6 py-1.5 whitespace-nowrap rounded-md bg-[#0a83ff] hover:bg-blue-700 text-white mr-2 font-helvetica font-bold text-[16px]"
                     onClick={() => {
                       handleLoading(); // Call handleLoading to handle loading state
                       submitEdit(index, msgIndex);
                     }}
                   >
-                    Submit & Save
+                    Save & Submit
                   </button>
                   <button
-                    className="px-2 py-1 text-white rounded-md border border-indigo-400 border-solid text-center"
+                    className="px-7 py-1 text-white rounded-md border border-[#4e91c1] text-center text-[#a1a1a1] font-helvetica font-normal h-[36px] pt-[6px]"
                     onClick={() => cancelEdit(index)}
                   >
                     Cancel
@@ -414,7 +398,7 @@ const Text_History = ({
           position={contextMenuPosition}
           onClose={() => setContextMenuPosition(null)}
           index={index}
-          chatHistroyID={chatHistroyID}
+          chatHistoryID={chatHistoryID}
           msgIndex={msgIndex}
           setPinnedMessageIndex={onSetPinnedMessageIndex}
           setUnpinnedMessageIndex={onSetUnpinnedMessageIndex}
@@ -451,7 +435,9 @@ const Text_History = ({
                 variant="light"
                 selectedKey={id == index ? tabSelected : data.type}
                 onSelectionChange={setTabSelected}
-                onClick={(e) => onChangeTabSelected(e.target.outerText)}
+                onClick={(e) =>
+                  onChangeTabSelected(e.target.outerText, chatHistoryID)
+                }
                 classNames={{
                   tabList: "w-full relative border-divider p-0 gap-0",
                   cursor: "w-full bg-[#2E353C] p-0",
@@ -568,7 +554,7 @@ const Text_History = ({
                         alt=""
                         width={18}
                         height={22}
-                        src={`svg/copy.svg`}
+                        src={`svg/Icon-copy.svg`}
                         className="cursor-pointer"
                       />
                     ) : (
@@ -612,7 +598,7 @@ const Text_History = ({
                           alt=""
                           width={18}
                           height={22}
-                          src={`svg/copy.svg`}
+                          src={`svg/Icon-copy.svg`}
                           className="cursor-pointer"
                         />
                       </Tooltip>
@@ -708,6 +694,46 @@ const Text_History = ({
                     />
                   </Tooltip>
                   <Tooltip
+                    content={<p className="text-[#FFF]">Like Response</p>}
+                    showArrow
+                    placement="bottom"
+                    delay={0}
+                    closeDelay={0}
+                    classNames={{
+                      base: ["before:bg-[##2E353C]"],
+                      content: [
+                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                      ],
+                    }}
+                    motionProps={{
+                      variants: {
+                        exit: {
+                          opacity: 0,
+                          transition: {
+                            duration: 0.1,
+                            ease: "easeIn",
+                          },
+                        },
+                        enter: {
+                          opacity: 1,
+                          transition: {
+                            duration: 0.15,
+                            ease: "easeOut",
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <Image
+                      alt=""
+                      width={16}
+                      height={21}
+                      src={"svg/Icon-heart.svg"}
+                      className="cursor-pointer"
+                    />
+                  </Tooltip>
+
+                  <Tooltip
                     content={<p className="text-[#FFF]">Regenerate</p>}
                     showArrow
                     placement="bottom"
@@ -743,7 +769,7 @@ const Text_History = ({
                       width={16}
                       height={21}
                       onClick={() =>
-                        Regenerate(msgIndex, chatHistroyID, data.type)
+                        Regenerate(msgIndex, chatHistoryID, data.type)
                       }
                       src={"svg/regen.svg"}
                       className="cursor-pointer"
@@ -780,7 +806,7 @@ const ContextMenu = ({
   position,
   onClose,
   index,
-  chatHistroyID,
+  chatHistoryID,
   msgIndex,
   setPinnedMessageIndex,
   setUnpinnedMessageIndex,
@@ -804,7 +830,7 @@ const ContextMenu = ({
 
   const handlePinMessage = () => {
     let data = JSON.stringify({
-      id: chatHistroyID,
+      id: chatHistoryID,
       index: index,
       msgIndex: msgIndex,
     });
@@ -822,19 +848,19 @@ const ContextMenu = ({
     onClose();
   };
 
-  const handleReply = (index, chatHistroyID) => {
+  const handleReply = (index, chatHistoryID) => {
     console.log("Reply clicked");
     onClose();
   };
 
-  const handleDeleteChat = (index, chatHistroyID) => {
+  const handleDeleteChat = (index, chatHistoryID) => {
     console.log("Delete Chat clicked");
     onClose();
   };
 
   const handleUnpinMessage = () => {
     let data = JSON.stringify({
-      id: chatHistroyID,
+      id: chatHistoryID,
       index: index,
       msgIndex: msgIndex,
     });
