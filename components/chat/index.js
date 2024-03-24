@@ -493,6 +493,7 @@ const Chat = ({
           setTextModel(textList.indexOf(response.data.data.type));
           setType(response.data.data.type);
           setChatHistory(response.data.data.history);
+          setTextAnimationIndex(-1);
         });
     } else {
       console.log("start img id data");
