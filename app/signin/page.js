@@ -105,28 +105,28 @@ const SignInOptions = () => {
       imageUrl: "svg/email.svg",
       altText: "Sign in with Email Icon",
       buttonText: "Sign in with Email",
-      extraClasses: "bg-white text-gray-500",
+      extraClasses: "bg-white text-gray-500 gap-1 text-[20px]",
       onClick: toggleEmailSignIn,
     },
     {
       imageUrl: "svg/google.svg",
       altText: "Sign in with Google Icon",
       buttonText: "Sign in with Google",
-      extraClasses: "bg-white text-gray-500",
+      extraClasses: "bg-white text-gray-500 gap-1 text-[20px]",
       onClick: () => login(),
     },
     {
       imageUrl: "svg/apple.svg",
       altText: "Sign in with Apple Icon",
       buttonText: "Sign in with Apple",
-      extraClasses: "bg-black text-white",
+      extraClasses: "bg-black text-white gap-1 text-[20px]",
       onClick: () => alert("Sign in with Apple clicked"),
     },
     {
       imageUrl: "svg/facebook.svg",
       altText: "Sign in with Facebook Icon",
       buttonText: "Sign in with Facebook",
-      extraClasses: "bg-blue-600 text-white",
+      extraClasses: "bg-[#1877F2] text-white gap-1 text-[20px]",
       onClick: () => alert("Sign in with Facebook clicked"),
     },
   ];
@@ -136,7 +136,7 @@ const SignInOptions = () => {
       {" "}
       {showSignInOptions && (
         <div className="flex items-center justify-center min-h-screen">
-          <section className="flex flex-col items-center px-7 pt-4 pb-6 text-xl font-medium text-white rounded-xl bg-zinc-800 max-w-[400px]">
+          <section className="flex flex-col items-center px-7 pt-4 pb-6 text-xl font-medium text-white rounded-[10px] bg-[#2D2D2D] min-w-[400px]">
             <header className="flex justify-between w-full  mb-4"></header>
             <main className="w-full">
               {buttonsData.map((button, index) => (
@@ -154,12 +154,12 @@ const SignInOptions = () => {
               <div
                 tabIndex="0"
                 role="button"
-                className="text-center mt-5 cursor-pointer text-white"
+                className="text-center mt-3 cursor-pointer text-white "
                 onClick={() => router.push("/register")}
               >
-                <span style={{ fontSize: "0.8rem" }}>
-                Don&apos;t have account? Register
-              </span>
+                <span style={{ fontSize: "15px" }}>
+                  Don't have account? Register
+                </span>
               </div>
             </main>
           </section>
@@ -250,7 +250,7 @@ function EmailSignInForm({ onClose }) {
 
   return (
     <form
-      className="flex flex-col px-6 pt-6 pb-9 text-base font-medium text-white rounded-xl bg-zinc-800 max-w-[400px]"
+      className="flex flex-col px-6 pt-6 pb-9 text-base font-medium text-white rounded-[10px] bg-[#2D2D2D] min-w-[400px]"
       onSubmit={handleSubmit}
     >
       <header className="flex flex-col max-w-full text-5xl text-center">
@@ -263,7 +263,7 @@ function EmailSignInForm({ onClose }) {
         />
         <h1 className="mt-1.5 font-nasalization">Sign in</h1>
       </header>
-      <div className="flex flex-col mt-10">
+      <div className="flex flex-col mt-5">
         <label htmlFor="email" className="sr-only">
           E-mail
         </label>
