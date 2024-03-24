@@ -78,6 +78,7 @@ const SignInOptions = () => {
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("userID", response.data.user_id);
                 localStorage.setItem("email", response.data.email);
+                localStorage.setItem("fullname", response.data.name);
                 router.push("/");
               }
             })
@@ -206,6 +207,7 @@ function EmailSignInForm({ onClose }) {
           );
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("userID", response.data.user_id);
+          localStorage.setItem("fullname", response.data.name);
           localStorage.setItem("email", response.data.email);
           router.push("/");
         }
