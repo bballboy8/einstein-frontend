@@ -12,9 +12,13 @@ import { Tabs, Tab, Tooltip, Select, SelectItem } from "@nextui-org/react";
 import { Menu, Dropdown, ConfigProvider } from "antd";
 import useAutosizeTextArea from "./useAutosizeTextArea";
 import { apiURL } from "@/config";
-
+import { Input } from "@nextui-org/react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronUpIcon } from "@heroicons/react/24/outline";
+import PrivacyPolicyModal from "./privacyPolicyModal";
 const textList = ["GPT-3.5", "GPT-4", "Gemini", "Perplexity", "Mistral"];
 const imgList = ["DALL-E", "Stable Diffusion XL", "Stable Diffusion 2"];
+
 const ratioList = [
   "1024x1024",
   "1152x896",
@@ -166,7 +170,7 @@ const PrivacyPolicyContent = () => {
 
 const Chat = ({
   chatStatus,
-  chatHistroyID,
+  chatHistoryID,
   setChatStatus,
   chatHistroyData,
   historySideData,
@@ -179,6 +183,8 @@ const Chat = ({
   imgHistoryID,
   setImgHistoryID,
   imgHistoryData,
+  fullName,
+  setFullName,
 }) => {
   const { textStatus, setTextStatus } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
@@ -200,8 +206,10 @@ const Chat = ({
   const [blur, setBlur] = useState(false);
   const [value, setValue] = useState("");
   const [id, setID] = useState();
+  const [showSearch, setShowSearch] = useState(false);
   const textAreaRef = useRef(null);
   const req_qa_box = useRef(null);
+
   const [isPrivacyPolicyModalOpen, setIsPrivacyPolicyModalOpen] =
     useState(false);
   const pinnedMessageRef = useRef(null);
@@ -239,7 +247,7 @@ const Chat = ({
 
   const handlePinClose = () => {
     let data = JSON.stringify({
-      id: chatHistroyID,
+      id: chatHistoryID,
       index: pinnedMessageIndex,
       msgIndex: pinnedMessageMsgIndex,
     });
@@ -452,6 +460,7 @@ const Chat = ({
   );
 
   useEffect(() => {
+    setFullName(localStorage.getItem("fullname"));
     if (switchStatus == true) return;
     else req_qa_box.current.scrollTop = req_qa_box.current.scrollHeight;
   }, [chatHistory, switchStatus, imgHistory]);
@@ -476,9 +485,9 @@ const Chat = ({
 
   useEffect(() => {
     if (imageModel == false) {
-      if (chatHistroyID != "") {
+      if (chatHistoryID != "") {
         setID("");
-        GetHistoryDataByID(chatHistroyID);
+        GetHistoryDataByID(chatHistoryID);
         setPinMessageVisible(false);
       }
     } else {
@@ -489,7 +498,7 @@ const Chat = ({
         GetHistoryDataByID(imgHistoryID);
       }
     }
-  }, [chatHistroyID, imgHistoryID, imageModel]);
+  }, [chatHistoryID, imgHistoryID, imageModel]);
 
   useAutosizeTextArea(textAreaRef.current, value);
 
@@ -558,7 +567,7 @@ const Chat = ({
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       if (imageModel == false) {
-        if (value != "") TextGenereate();
+        if (value != "") TextGenerate();
         else return;
       } else {
         if (value != "") ImageGenerate();
@@ -572,581 +581,160 @@ const Chat = ({
     setValue(value);
   };
 
-  const TextGenereate = () => {
-    console.log("text geenration start");
+  const apiMapping = {
+    "GPT-4": "gpt4",
+    "GPT-3.5": "gpt3",
+    Gemini: "gemini",
+    Mistral: "mistral",
+    Perplexity: "perplexityai",
+  };
+
+  const TextGenerate = () => {
+    console.log("text generation start");
     setSwitchStatus(false);
     setChatStatus(true);
-    let new_history = [...chatHistory];
-    new_history.push([{ role: "user", content: value }, { role: "loading" }]);
-    const loadingIndex = chatHistroyID == "" ? 0 : new_history.length - 1;
+    let newHistory = [...chatHistory];
+    newHistory.push([{ role: "user", content: value }, { role: "loading" }]);
+    const loadingIndex = chatHistoryID == "" ? 0 : newHistory.length - 1;
     setTextAnimationIndex(loadingIndex);
-    setChatHistory(new_history);
-    if (chatHistroyID == "") {
-      let data = JSON.stringify({
-        prompt: value,
-        id: chatHistroyID,
-        type: selected,
-        userID: localStorage.getItem("userID"),
-      });
-      setChatTitle(value);
-      setValue("");
-      console.log("TExt generaate: data--> ", data);
+    setChatHistory(newHistory);
 
-      if (selected == "GPT-4") {
-        axios
-          .post(`${apiURL}/ai/gpt4`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "GPT-4";
+    const handleResponse = (response, modelType, chatHistoryID) => {
+      if (loadingIndex != -1) {
+        const updatedItem = [...newHistory[loadingIndex]];
+        updatedItem[1].role = "assistant";
+        updatedItem[1].content = response.data.data;
+        updatedItem[1].type = modelType;
 
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
+        const updatedHistory = [...newHistory];
+        updatedHistory[loadingIndex] = updatedItem;
 
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-              setHistorySideData([
-                {
-                  id: response.data.id,
-                  title: value,
-                  bot: response.data.data,
-                  date: response.data.date,
-                  thumbnail_url: response.data.thumbnail_url,
-                },
-                ...historySideData,
-              ]);
-            }
-          });
-      } else if (selected == "GPT-3.5") {
-        axios
-          .post(`${apiURL}/ai/gpt3`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "GPT-3.5";
+        setChatHistory(updatedHistory);
 
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-              setHistorySideData([
-                {
-                  id: response.data.id,
-                  title: value,
-                  bot: response.data.data,
-                  date: response.data.date,
-                  thumbnail_url: response.data.thumbnail_url,
-                },
-                ...historySideData,
-              ]);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } else if (selected == "Gemini") {
-        axios
-          .post(`${apiURL}/ai/gemini`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "Gemini";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-              setHistorySideData([
-                {
-                  id: response.data.id,
-                  title: value,
-                  bot: response.data.data,
-                  date: response.data.date,
-                  thumbnail_url: response.data.thumbnail_url,
-                },
-                ...historySideData,
-              ]);
-            }
-          });
-      } else if (selected == "Mistral") {
-        axios
-          .post(`${apiURL}/ai/mistral`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "Mistral";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-              setHistorySideData([
-                {
-                  id: response.data.id,
-                  title: value,
-                  bot: response.data.data,
-                  date: response.data.date,
-                  thumbnail_url: response.data.thumbnail_url,
-                },
-                ...historySideData,
-              ]);
-            }
-          });
-      } else if (selected == "Perplexity") {
-        axios
-          .post(`${apiURL}/ai/perplexityai`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "Perplexity";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-              setHistorySideData([
-                {
-                  id: response.data.id,
-                  title: value,
-                  bot: response.data.data,
-                  date: response.data.date,
-                  thumbnail_url: response.data.thumbnail_url,
-                },
-                ...historySideData,
-              ]);
-            }
-          });
+        if (chatHistoryID == "") {
+          setHistorySideData([
+            {
+              id: response.data.id,
+              title: value,
+              bot: response.data.data,
+              date: response.data.date,
+              thumbnail_url: response.data.thumbnail_url,
+            },
+            ...historySideData,
+          ]);
+        }
+        setChatHistoryID(response.data.id);
       }
-    } else {
-      let pasthistory = [];
+    };
 
-      chatHistory.forEach((item) => {
-        let newItem = removeTypeAndPinnedField({ ...item });
-        pasthistory.push(newItem);
-      });
-      const newData = chatHistory.map((arr) =>
-        arr.map(({ role, content }) => ({ role, content }))
-      );
-      const flattenedArray = newData.flat();
-      let data = JSON.stringify({
-        prompt: value,
-        id: chatHistroyID,
-        type: type,
-        pasthistory: flattenedArray,
-        userID: localStorage.getItem("userID"),
-      });
-      setValue("");
-      if (modelType == "GPT-4") {
-        axios
-          .post(`${apiURL}/ai/gpt4`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "GPT-4";
+    const requestData = {
+      prompt: value,
+      id: chatHistoryID,
+      type: selected,
+      userID: localStorage.getItem("userID"),
+    };
 
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-            }
-          });
-      } else if (modelType == "GPT-3.5") {
-        axios
-          .post(`${apiURL}/ai/gpt3`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "GPT-3.5";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-            }
-          });
-      } else if (modelType == "Gemini") {
-        axios
-          .post(`${apiURL}/ai/gemini`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "Gemini";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-            }
-          });
-      } else if (modelType == "Mistral") {
-        axios
-          .post(`${apiURL}/ai/mistral`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "Mistral";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-            }
-          });
-      } else if (modelType == "Perplexity") {
-        axios
-          .post(`${apiURL}/ai/perplexityai`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (loadingIndex !== -1) {
-              // Create a new array with the updated item
-              const updatedItem = [...new_history[loadingIndex]];
-              updatedItem[1].role = "assistant";
-              updatedItem[1].content = response.data.data;
-              updatedItem[1].type = "Perplexity";
-
-              // Create a new history array with the updated item
-              const updatedHistory = [...new_history];
-              updatedHistory[loadingIndex] = updatedItem;
-
-              // Update the chat history state
-              setChatHistory(updatedHistory);
-              setChatHistoryID(response.data.id);
-            }
-          });
-      }
+    if (chatHistoryID == "") {
+      const flattenedHistoryData = historySideData
+        .map(({ role, content }) => ({ role, content }))
+        .flat();
+      requestData.pasthistory = flattenedHistoryData;
     }
+
+    setValue("");
+
+    const apiName = apiMapping[selected];
+
+    if (apiName) {
+      axios
+        .post(`${apiURL}/ai/${apiName}`, JSON.stringify(requestData), {
+          headers: { "Content-Type": "application/json" },
+        })
+        .then((response) => handleResponse(response, selected, chatHistoryID))
+        .catch((error) => console.error(error));
+    }
+  };
+
+  const imgApiMapping = {
+    "DALL-E": "dall",
+    "Stable Diffusion XL": "diffu_xl",
+    "Stable Diffusion 2": "diffu_two",
   };
 
   const ImageGenerate = () => {
     setSwitchStatus(false);
     setChatStatus(true);
     console.log("Image generation start", imgHistoryID);
-    let new_history = [...imgHistory];
-    new_history.push([{ role: "user", content: value }, { role: "loading" }]);
-    setImgHistory(new_history);
+    let newHistory = [...imgHistory];
+    newHistory.push([{ role: "user", content: value }, { role: "loading" }]);
+    setImgHistory(newHistory);
+    const loadingIndex = newHistory.findIndex(
+      (item) => item[1].role == "loading"
+    );
+
+    const handleResponse = (response, modelType, prompt) => {
+      if (loadingIndex !== -1 && response.data) {
+        const updatedItem = [...newHistory[loadingIndex]];
+        updatedItem[1].role = "assistant";
+        updatedItem[1].content = response.data.data;
+        updatedItem[1].type = modelType;
+
+        const updatedHistory = [...newHistory];
+        updatedHistory[loadingIndex] = updatedItem;
+
+        setImgHistory(updatedHistory);
+        setImgHistoryID(response.data.id);
+
+        if (imgHistoryID == "") {
+          setHistorySideData([
+            {
+              id: response.data.id,
+              title: prompt,
+              date: response.data.date,
+              thumbnail_url: response.data.thumbnail_url,
+            },
+            ...historySideData,
+          ]);
+        }
+      }
+    };
+
+    const requestData = {
+      prompt: value,
+      type: imgHistoryID == "" ? imgSelected : imgModelType,
+      id: imgHistoryID == "" ? "" : imgHistoryID,
+      userID: localStorage.getItem("userID"),
+      size: ratio,
+    };
     if (imgHistoryID == "") {
-      let data = JSON.stringify({
-        prompt: value,
-        type: imgSelected,
-        id: "",
-        userID: localStorage.getItem("userID"),
-        size: ratio,
-      });
       setChatTitle(value);
-      setValue("");
-      const loadingIndex = new_history.findIndex(
-        (item) => item[1].role === "loading"
-      );
-      console.log("Sending api data: ", data);
-      if (imgSelected == "DALL-E") {
-        axios
-          .post(`${apiURL}/img/dall`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (response.data) {
-              if (loadingIndex !== -1) {
-                // Create a new array with the updated item
-                const updatedItem = [...new_history[loadingIndex]];
-                updatedItem[1].role = "assistant";
-                updatedItem[1].content = response.data.data;
-                updatedItem[1].type = response.data.type;
-
-                // Create a new history array with the updated item
-                const updatedHistory = [...new_history];
-                updatedHistory[loadingIndex] = updatedItem;
-
-                // Update the chat history state
-                setImgHistory(updatedHistory);
-                setImgHistoryID(response.data.id);
-                setHistorySideData([
-                  {
-                    id: response.data.id,
-                    title: value,
-                    date: response.data.date,
-                    thumbnail_url: response.data.thumbnail_url,
-                  },
-                  ...historySideData,
-                ]);
-              }
-            }
-
-            // let imgResponseData = new_history.map((item) => {
-            //   if (item.role === "loading") {
-            //     return {
-            //       role: "assistant",
-            //       content: response.data.data,
-            //       type: response.data.type,
-            //     };
-            //   } else {
-            //     return item;
-            //   }
-            // });
-            // console.log(imgResponseData);
-            // console.log(response);
-            // console.log(response.data);
-            // setImgHistory(imgResponseData);
-            // setImgHistoryID(response.data.id);
-            // setHistorySideData([
-            //   {
-            //     id: response.data.id,
-            //     title: value,
-            //     date: response.data.date,
-            //     thumbnail_url: response.data.thumbnail_url,
-            //   },
-            //   ...historySideData,
-            // ]);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else if (imgSelected == "Stable Diffusion XL") {
-        axios
-          .post(`${apiURL}/img/diffu_xl`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (response.data) {
-              if (loadingIndex !== -1) {
-                // Create a new array with the updated item
-                const updatedItem = [...new_history[loadingIndex]];
-                updatedItem[1].role = "assistant";
-                updatedItem[1].content = response.data.data;
-                updatedItem[1].type = response.data.type;
-
-                // Create a new history array with the updated item
-                const updatedHistory = [...new_history];
-                updatedHistory[loadingIndex] = updatedItem;
-
-                // Update the chat history state
-                setImgHistory(updatedHistory);
-                setImgHistoryID(response.data.id);
-                setHistorySideData([
-                  {
-                    id: response.data.id,
-                    title: value,
-                    date: response.data.date,
-                    thumbnail_url: response.data.thumbnail_url,
-                  },
-                  ...historySideData,
-                ]);
-              }
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else if (imgSelected == "Stable Diffusion 2") {
-        axios
-          .post(`${apiURL}/img/diffu_two`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (response.data) {
-              if (loadingIndex !== -1) {
-                // Create a new array with the updated item
-                const updatedItem = [...new_history[loadingIndex]];
-                updatedItem[1].role = "assistant";
-                updatedItem[1].content = response.data.data;
-                updatedItem[1].type = response.data.type;
-
-                // Create a new history array with the updated item
-                const updatedHistory = [...new_history];
-                updatedHistory[loadingIndex] = updatedItem;
-
-                // Update the chat history state
-                setImgHistory(updatedHistory);
-                setImgHistoryID(response.data.id);
-                setHistorySideData([
-                  {
-                    id: response.data.id,
-                    title: value,
-                    date: response.data.date,
-                    thumbnail_url: response.data.thumbnail_url,
-                  },
-                  ...historySideData,
-                ]);
-              }
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }
-    } else {
-      console.log("update img histroy start");
-      let data = JSON.stringify({
-        prompt: value,
-        type: imgModelType,
-        id: imgHistoryID,
-        userID: localStorage.getItem("userID"),
-        size: ratio,
-      });
-      setValue("");
-      console.log("Sending api data: ", data);
-
-      if (imgModelType == "DALL-E") {
-        axios
-          .post(`${apiURL}/img/dall`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (response.data) {
-              if (loadingIndex !== -1) {
-                // Create a new array with the updated item
-                const updatedItem = [...new_history[loadingIndex]];
-                updatedItem[1].role = "assistant";
-                updatedItem[1].content = response.data.data;
-                updatedItem[1].type = response.data.type;
-
-                // Create a new history array with the updated item
-                const updatedHistory = [...new_history];
-                updatedHistory[loadingIndex] = updatedItem;
-
-                // Update the chat history state
-                setImgHistory(updatedHistory);
-                setImgHistoryID(response.data.id);
-              }
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else if (imgModelType == "Stable Diffusion XL") {
-        axios
-          .post(`${apiURL}/img/diffu_xl`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (response.data) {
-              if (loadingIndex !== -1) {
-                // Create a new array with the updated item
-                const updatedItem = [...new_history[loadingIndex]];
-                updatedItem[1].role = "assistant";
-                updatedItem[1].content = response.data.data;
-                updatedItem[1].type = response.data.type;
-
-                // Create a new history array with the updated item
-                const updatedHistory = [...new_history];
-                updatedHistory[loadingIndex] = updatedItem;
-
-                // Update the chat history state
-                setImgHistory(updatedHistory);
-                setImgHistoryID(response.data.id);
-              }
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else if (imgModelType == "Stable Diffusion 2") {
-        axios
-          .post(`${apiURL}/img/diffu_two`, data, {
-            headers: { "Content-Type": "application/json" },
-          })
-          .then((response) => {
-            if (response.data) {
-              if (loadingIndex !== -1) {
-                // Create a new array with the updated item
-                const updatedItem = [...new_history[loadingIndex]];
-                updatedItem[1].role = "assistant";
-                updatedItem[1].content = response.data.data;
-                updatedItem[1].type = response.data.type;
-
-                // Create a new history array with the updated item
-                const updatedHistory = [...new_history];
-                updatedHistory[loadingIndex] = updatedItem;
-
-                // Update the chat history state
-                setImgHistory(updatedHistory);
-                setImgHistoryID(response.data.id);
-              }
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }
     }
+
+    const apiUrl =
+      imgHistoryID == ""
+        ? `${apiURL}/img/${imgApiMapping[imgSelected]}`
+        : `${apiURL}/img/${imgApiMapping[imgModelType]}`;
+
+    setValue("");
+    console.log("Sending api data: ", requestData);
+
+    axios
+      .post(apiUrl, JSON.stringify(requestData), {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) =>
+        handleResponse(response, requestData.type, requestData.prompt)
+      )
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const clearHistory = () => {
     setChatHistory([]);
-    // console.log(chatHistroyID);
+    // console.log(chatHistoryID);
     // let data = {
-    //   id: chatHistroyID
+    //   id: chatHistoryID
     // };
     // axios
     //   .post(`${apiURL}/ai/clear`, data, {
@@ -1207,6 +795,10 @@ const Chat = ({
     setSelected(type);
   };
 
+  const handleShowSearch = () => {
+    setShowSearch(!showSearch);
+  };
+
   return (
     <div
       className={`flex flex-1 flex-col pl-8 max-mlg:px-2 ${
@@ -1214,17 +806,59 @@ const Chat = ({
       }`}
     >
       <div className="flex flex-col justify-between w-full">
-        <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg  gap-3 justify-between pl-6 rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md">
-          <p className="mt-3 font-nasalization text-[#FFF] max-w-[880px]">
+        <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg  gap-3 justify-between pl-2 rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md">
+          <p className="flex mt-3 font-nasalization text-[#FFF] max-w-[880px]">
+            <div className="min-w-8 h-8 max-msm:w-12 max-msm:h-12 bg-[#2b2b2c] border border-[#484a4c] rounded-full flex flex-row items-center justify-center text-[#E9ECEF] text-[14px] font-nasalization font-medium leading-normal -mt-[4px] ml-[0px] mr-[8px] pt-[3px]">
+              {chatTitle.slice(0, 1)}
+            </div>
             {chatTitle.length < 30
               ? chatTitle.slice(0, 30)
               : chatTitle.slice(0, 30).concat("...")}
           </p>
-          <div className="rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
-            <Image alt="" width={24} height={24} src={"svg/info.svg"} />
+          <div className="flex">
+            <div className="flex rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
+              <Image alt="" width={18} height={18} src={"svg/link-icon.svg"} />
+            </div>
+            <div
+              className="flex rounded-3xl p-4 bg-[#272D33] rounded-[24px] ml-[3px] cursor-pointer"
+              onClick={handleShowSearch}
+            >
+              <Image alt="" width={18} height={18} src={"svg/search-new.svg"} />
+            </div>
           </div>
         </div>
+        {showSearch && (
+          <div className="flex flex-row z-[1] max-msm:hidden w-xl max-mlg:w-mlg  gap-3 justify-between px-7 py-2">
+            <div className="flex updown-arrow mt-[10px] gap-1">
+              <ChevronUpIcon className="h-6 w-6 text-[#8c9aac] cursor-pointer" />
+              <ChevronDownIcon className="h-6 w-6 text-[#8c9aac] cursor-pointer" />
+            </div>
 
+            <div className="flex px-3 input-search-bg rounded-3xl bg-[rgba(39,45,51,0.70)] shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)] backdrop-blur-md w-full">
+              <Image alt="" width={18} height={18} src={"svg/search-new.svg"} />
+              <input
+                type="text"
+                placeholder="Search"
+                className="text-[#FFF] text-[14px] w-full bg-transparent outline-none rounded font-normal leading-normal ml-1 bg-none min-h-[40px]"
+              />
+
+              <div className="scursor-pointer rounded-full w-[20px] h-[20px] bg-[#7c7c7c] pl-[5px] pt-[5px] mt-[9px]">
+                <Image
+                  alt=""
+                  width={10}
+                  height={10}
+                  src={"svg/Icon-close.svg"}
+                />
+              </div>
+            </div>
+            <div
+              className="search-close cursor-pointer mt-[13px]"
+              onClick={handleShowSearch}
+            >
+              <Image alt="" width={18} height={18} src={"svg/Icon-close.svg"} />
+            </div>
+          </div>
+        )}
         <div
           className={`flex flex-row justify-between items-center p-2 pl-6  max-msm:hidden w-xl max-mlg:w-mlg border-b border-gray-600 ${
             pinMessageVisible ? "" : "hidden"
@@ -1287,7 +921,7 @@ const Chat = ({
                         msgIndex={msgIndex}
                         data={message}
                         chatHistory={chatHistory}
-                        chatHistroyID={chatHistroyID}
+                        chatHistoryID={chatHistoryID}
                         id={id}
                         index={index}
                         loading={loading}
@@ -1355,27 +989,71 @@ const Chat = ({
           )
         ) : (
           toggleStatus == 1 && (
-            <div className="flex flex-col bg-[#23272B] rounded-[20px] max-w-[920px] w-full mx-auto my-auto">
-              <div className="flex flex-row m-11 gap-2">
-                <Image
-                  alt=""
-                  width={40}
-                  height={34}
-                  src={"/logo.png"}
-                  className=""
-                />
-                <p className="text-[#FFF] text-[28px] font-normal leading-normal font-nasalization">
-                  Einstein
-                </p>
-              </div>
-              <div className="flex flex-row justify-center text-[#D0D0D0] text-lg font-normal leading-7">
-                <p className="max-w-[708px] w-full mx-auto">
-                  Einstein Combines the best of all AI models available today.
-                  For each question you ask, the best AI will be chosen to
-                  respond to you. Here are some of the models we use:
-                </p>
-              </div>
-              <div className="flex flex-row gap-6 font-nasalization text-[#C2C2C2] text-sm font-normal mx-auto my-11">
+            <>
+              <div className="flex flex-col rounded-[20px] max-w-[860px] w-full mx-auto my-auto">
+                <h2 className="bg-gradient-to-r from-[#7B88FF] via-[#7B88FF] to-[#64D0FF] inline-block text-transparent bg-clip-text text-[41.52px] font-normal leading-normal font-nasalization">
+                  Hello, {fullName}{" "}
+                </h2>
+                {imageModel == false ? (
+                  <>
+                    <h2 className="text-[41.52px] font-normal leading-normal font-nasalization text-[#6B6B6B] mb-[30px]">
+                      How can I help you today?
+                    </h2>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
+                        “Rewrite this paragraph to be more concise...”
+                      </div>
+                      <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
+                        "Summarize this article in 5 bullet points..."
+                      </div>
+                      <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
+                        "Based on this data, predict future trends in the
+                        market."
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-[41.52px] font-normal leading-normal font-nasalization text-[#6B6B6B] mb-[30px]">
+                      What image should I make?
+                    </h2>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
+                        “Tarzan riding a lion”
+                      </div>
+                      <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
+                        "Detailed oil painting of Muhammad Ali"
+                      </div>
+                      <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
+                        "Mordern home in the hills of jungle"
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-row mt-[30px] gap-2 justify-center">
+                  <Image
+                    alt=""
+                    width={30}
+                    height={30}
+                    src={"/logo.png"}
+                    className=""
+                  />
+                  <p className="text-[#D0D0D0] text-[19px] font-normal leading-normal font-nasalization">
+                    Einstein
+                    <span className="text-[19px] font-normal leading-normal font-helvetica ml-[8px]">
+                      combines the best AI models available today. Watch the
+                      video{" "}
+                      <a href="" className="font-bold">
+                        here
+                      </a>
+                    </span>
+                  </p>
+                </div>
+
+                {/* <div className="flex flex-row gap-6 font-nasalization text-[#C2C2C2] text-sm font-normal mx-auto my-11">
                 {imageModel == false ? (
                   <Tabs
                     size="sm"
@@ -1421,8 +1099,9 @@ const Chat = ({
                     )}
                   </Tabs>
                 )}
+              </div> */}
               </div>
-            </div>
+            </>
           )
         )}
       </div>
@@ -1629,14 +1308,14 @@ const Chat = ({
                 className="cursor-pointer"
                 onClick={
                   imageModel == false
-                    ? () => TextGenereate()
+                    ? () => TextGenerate()
                     : () => ImageGenerate()
                 }
               />
             </div>
           </div>
         </div>
-        <div className="max-msm:hidden text-[#FFF] text-[12px] font-normal leading-normal mt-3">
+        <div className="max-msm:hidden text-[#929292] text-[10.7px] font-normal font-Inter leading-normal mt-2">
           Einstein may display inaccurate or dangerous information, please use
           responsibly.{" "}
           <a
@@ -1650,23 +1329,9 @@ const Chat = ({
 
         {/* Privacy Policy Modal */}
         {isPrivacyPolicyModalOpen && (
-          <div className="modal-container">
-            <div
-              className="modal-backdrop"
-              onClick={() => setIsPrivacyPolicyModalOpen(false)}
-            ></div>
-            <div className="modal-box">
-              <div className="modal-header">
-                <CloseOutlined
-                  className="close-icon"
-                  onClick={() => setIsPrivacyPolicyModalOpen(false)}
-                />
-              </div>
-              <div className="modal-content-scrollable">
-                <PrivacyPolicyContent />
-              </div>
-            </div>
-          </div>
+          <PrivacyPolicyModal
+            setIsPrivacyPolicyModalOpen={setIsPrivacyPolicyModalOpen}
+          />
         )}
       </div>
     </div>

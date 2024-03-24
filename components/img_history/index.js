@@ -86,12 +86,12 @@ const ContextMenu = ({
     // Function to hide pinned message when close button is clicked
   };
 
-  const handleReply = (index, chatHistroyID) => {
+  const handleReply = (index, chatHistoryID) => {
     console.log("Reply clicked");
     onClose();
   };
 
-  const handleDeleteChat = (index, chatHistroyID) => {
+  const handleDeleteChat = (index, chatHistoryID) => {
     console.log("Delete Chat clicked");
     onClose();
   };
@@ -190,6 +190,11 @@ const Img_History = ({
     "Stable Diffusion XL",
     "Stable Diffusion 2",
   ]);
+  const tooltipModalContent = [
+    "DALL-E",
+    "Stable Diffusion XL",
+    "Stable Diffusion 2",
+  ];
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [heart, setHeart] = useState(false);
   const [upScale, setUpScale] = useState(false);
@@ -579,6 +584,7 @@ const Img_History = ({
                         key={imageList[index]}
                         title={<p>{imageList[index]}</p>}
                       />
+                      // </Tooltip>
                     )
                 )}
               </Tabs>

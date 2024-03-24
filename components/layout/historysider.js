@@ -200,8 +200,8 @@ const HistorySider = ({
         mobileStatus == true || settingModel == true ? " max-mlg:hidden" : null
       }`}
     >
-      <div className="flex flex-row justify-between mx-[6px] max-msm:ml-0 max-msm:rounded-br-3xl py-2 bg-[#0A84FF] msm:rounded-b-3xl px-6 max-mlg:hidden">
-        <div className="flex flex-row gap-8 text-base font-normal leading-normal font-nasalization">
+      <div className="flex flex-row justify-between mx-[6px] max-msm:ml-0 max-msm:rounded-br-3xl py-2 bg-[#0A84FF] msm:rounded-b-3xl px-3 max-mlg:hidden">
+        <div className="flex flex-row gap-4 text-base font-normal leading-normal font-nasalization">
           <p
             className={`w-1/5 text-center ${
               generateType == 0 ? "text-[#FFF]" : "text-[#D2D2D2]"
@@ -212,6 +212,7 @@ const HistorySider = ({
               setChatStatus(false);
               setImgHistoryID("");
               setImgHistoryData([]);
+              setChatTitle("New Chat");
             }}
           >
             Text
@@ -226,9 +227,17 @@ const HistorySider = ({
               setChatStatus(false);
               setChatHistoryID("");
               setChatHistoryData([]);
+              setChatTitle("New Chat");
             }}
           >
             Image
+          </p>
+
+          <p className="w-1/5 text-center text-[#D2D2D2] hover:text-[#FFF] hover:cursor-pointer">
+            Audio
+          </p>
+          <p className="w-1/5 text-center text-[#D2D2D2] hover:text-[#FFF] hover:cursor-pointer">
+            Video
           </p>
         </div>
         <Tooltip
@@ -405,7 +414,7 @@ const HistorySider = ({
                         src="/Close.png"
                         className="shrink-0 aspect-square w-[19px] h-[19px] -ml-[32px] mt-[1px]"
                       />
-                      Unpinned
+                      Unpin Chat
                     </div>
                   ) : (
                     <div
@@ -417,7 +426,7 @@ const HistorySider = ({
                         src="svg/pin.svg"
                         className="shrink-0 aspect-square w-[19px]"
                       />
-                      Pinned
+                      Pin Chat
                     </div>
                   )}
 
