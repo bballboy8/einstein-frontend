@@ -46,7 +46,8 @@ const Index = () => {
     axios
       .post(
         `${apiURL}/auth/update/`,
-        { data: userData },
+        userData,
+
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -196,7 +197,7 @@ const Index = () => {
                   className="text-[#FFF] outline-none bg-[rgba(47,55,62,0.00)] mt-1 w-full"
                   defaultValue={userInfo.full_name}
                   onChange={(e) =>
-                    setUserData({ ...userData, name: e.target.value })
+                    setUserData({ ...userData, full_name: e.target.value })
                   }
                 />
               </div>

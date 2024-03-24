@@ -16,6 +16,9 @@ import { Input } from "@nextui-org/react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { ChevronUpIcon } from "@heroicons/react/24/outline";
 import PrivacyPolicyModal from "./privacyPolicyModal";
+
+import DualListBox from "./List";
+
 const textList = ["GPT-3.5", "GPT-4", "Gemini", "Perplexity", "Mistral"];
 const imgList = ["DALL-E", "Stable Diffusion XL", "Stable Diffusion 2"];
 
@@ -29,144 +32,6 @@ const ratioList = [
   "768x1344",
   "640x1536",
 ];
-
-const PrivacyPolicyContent = () => {
-  return (
-    <div className="modal-content">
-      <h2 className="modal-heading">Einstein Privacy Policy</h2>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Introduction</h3>
-        <p>
-        {`
-          Einstein AI ("Einstein", "we", "us", or "our") respects the privacy of
-          its users ("user", "you", or "your") and is committed to protecting
-          your personal information. This Privacy Policy outlines our practices
-          regarding the collection, use, and disclosure of your information
-          through the use of our Einstein AI application ("Application") and any
-          of our services (collectively, "Services").
-        `}
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Collection of Information</h3>
-        <p>
-          We collect information that you provide directly to us, such as when
-          you create an account, use our Services, or communicate with us. This
-          information may include your name, email address, and any other
-          information you choose to provide. We also collect non-personally
-          identifiable information, such as usage data and device identifiers,
-          to improve our Services.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Use of Information</h3>
-        <p>
-          The information we collect is used to provide, maintain, and improve
-          our Services, to communicate with you, and to personalize your
-          experience. We do not use your data without your consent, except as
-          required by law or as necessary to provide our Services to you.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">
-          Sharing and Disclosure of Information
-        </h3>
-        <p>
-          We do not sell your sensitive data to third parties. Information may
-          be shared with third-party service providers who perform services on
-          our behalf, under strict privacy agreements. We may also disclose your
-          information if required by law or to protect our rights and the safety
-          of our users.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Data Security</h3>
-        <p>
-          We implement appropriate technical and organizational measures to
-          protect the security of your personal information. However, no
-          security system is impenetrable, and we cannot guarantee the security
-          of our data.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Limitation of Liability</h3>
-        <p>
-        {`
-          Einstein AI provides its Services "as is" and makes no representations
-          or warranties of any kind, express or implied, as to the Services'
-          operation or the information, content, materials, or products included
-          on the Services. To the full extent permissible by applicable law,
-          Einstein disclaims all warranties, express or implied, including, but
-          not limited to, implied warranties of merchantability and fitness for
-          a particular purpose. Einstein will not be liable for any damages of
-          any kind arising from the use of the Services, including, but not
-          limited to direct, indirect, incidental, punitive, and consequential
-          damages.
-        `}
-        </p>
-        <p>
-        {`
-          Under no circumstances will Einstein AI be liable for any loss or
-          damage caused by your reliance on information obtained through the
-          Services or caused by the user's conduct. Einstein AI does not assume
-          any responsibility for errors or omissions in any content or
-          information provided within the Services.
-        `}
-        </p>
-        <p>
-          By using the Einstein AI Services, you expressly agree that your use
-          of the Services is at your sole risk. You shall not hold Einstein AI
-          or its licensors and suppliers, as applicable, liable for any damages
-          that result from your use of the Services. This comprehensive
-          limitation of liability applies to all damages of any kind, including
-          (without limitation) compensatory, direct, indirect, or consequential
-          damages; loss of data, income, or profit; loss of or damage to
-          property; and claims of third parties.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">User Consent</h3>
-        <p>
-          By using our Services, you consent to the collection, use, and sharing
-          of your information as described in this Privacy Policy. We will not
-          use your data for any purpose without your consent.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Changes to This Privacy Policy</h3>
-        <p>
-          We may update this Privacy Policy from time to time. We will notify
-          you of any changes by posting the new Privacy Policy on this page. You
-          are advised to review this Privacy Policy periodically for any
-          changes.
-        </p>
-      </div>
-
-      <div className="modal-section">
-        <h3 className="modal-subheading">Contact Us</h3>
-        <p>
-          If you have any questions about this Privacy Policy, please contact us
-          at{" "}
-          <a
-            href="mailto:coreintelligencellc@gmail.com"
-            style={{ textDecoration: "underline" }}
-          >
-            coreintelligencellc@gmail.com
-          </a>
-          .
-        </p>
-      </div>
-    </div>
-  );
-};
 
 const Chat = ({
   chatStatus,
@@ -200,6 +65,7 @@ const Chat = ({
   const [modelType, setModelType] = useState("");
   const [imgModelType, setImgModelType] = useState("");
   const [textModel, setTextModel] = useState(0);
+  const [imageModelIndex, setImageModelIndex] = useState(0);
   const [type, setType] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [imgHistory, setImgHistory] = useState([]);
@@ -276,11 +142,116 @@ const Chat = ({
 
   const changeModal = (number) => {
     console.log(number);
-    setTextModel(number);
-    setSelected(textList[number]);
+
+    if (imageModel == false) {
+      setTextModel(number);
+      setSelected(textList[number]);
+    } else {
+      setImageModelIndex(number);
+      setImgSelected(imgList[number]);
+    }
   };
 
-  const menu = (
+  const imageMenu = (
+    <div className="mb-4">
+      <Menu>
+        <div className="mb-4">
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Specializes in creating unique, imaginative images from text
+                  descriptions, showcasing creative and artistic abilities.
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
+            >
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(0)}
+              >
+                <Image
+                  alt=""
+                  width={24}
+                  height={24}
+                  src={"/models/dall-e.png"}
+                />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  DALL - E
+                </p>
+              </div>
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  An advanced iteration known for its capability to handle
+                  complex image generation tasks with high accuracy.
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
+            >
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(1)}
+              >
+                <Image
+                  alt=""
+                  width={24}
+                  height={24}
+                  src={"/models/s-diffu.png"}
+                />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  Stable Diffusion XL
+                </p>
+              </div>
+            </Tooltip>
+          </Menu.Item>
+          <div className="border-b border-b-[#313535]"></div>
+          <Menu.Item>
+            <Tooltip
+              placement="right"
+              content={
+                <div className="text-base text-[#FFF] font-helvetica font-normal">
+                  Enhanced from Stable Diffusion 2, this model excels in complex
+                  image synthesis, with improved text encoding and training.{" "}
+                </div>
+              }
+              classNames={{
+                content: ["mx-6 py-2 px-0", "bg-[#2E353C]"],
+              }}
+              delay={0}
+              closeDelay={0}
+            >
+              <div
+                className="flex flex-row gap-2 my-2"
+                onClick={() => changeModal(2)}
+              >
+                <Image alt="" width={24} height={24} src={"/models/s-xl.png"} />
+                <p className="text-sm font-medium text-[#FFF] leading-normal">
+                  Stable Diffusion 2
+                </p>
+              </div>
+            </Tooltip>
+          </Menu.Item>
+        </div>
+      </Menu>
+    </div>
+  );
+
+  const textMenu = (
     <div className="mb-4">
       <Menu>
         <div className="mb-4">
@@ -467,8 +438,6 @@ const Chat = ({
 
   useEffect(() => {
     setModelType(selected);
-
-    // setTextModel(textList.indexOf(selected));
   }, [selected]);
 
   useEffect(() => {
@@ -532,14 +501,6 @@ const Chat = ({
           headers: { "Content-Type": "application/json" },
         })
         .then((response) => {
-          // let a = [];
-          // response.data.data.history.map((data, index) => {
-          //   data.map((dt, i) => {
-          //     if (dt.role == "user" || dt.type == response.data.data.type)
-          //       a.push(dt);
-          //   });
-          // });
-
           response.data.data.history.forEach((item, msgIndex) => {
             item.forEach((message, index) => {
               if (message.pinned) {
@@ -550,7 +511,8 @@ const Chat = ({
               }
             });
           });
-
+          setImageModelIndex(imgList.indexOf(response.data.data.type));
+          setImgSelected(imgList[imageModelIndex]);
           setImgModelType(response.data.data.type);
           setImgHistory(response.data.data.history);
         });
@@ -634,17 +596,26 @@ const Chat = ({
       userID: localStorage.getItem("userID"),
     };
 
-    if (chatHistoryID == "") {
-      const flattenedHistoryData = historySideData
-        .map(({ role, content }) => ({ role, content }))
-        .flat();
-      requestData.pasthistory = flattenedHistoryData;
+    if (chatHistoryID != "") {
+      const pastHistory = [];
+      chatHistory.forEach((innerArray) => {
+        const newInnerArray = innerArray.map((item) => {
+          const newItem = { ...item }; // Create a new object to avoid modifying the original item
+          if (Array.isArray(newItem.content)) {
+            newItem.content = newItem.content[newItem.content.length - 1]; // Get the last item from the array as a string
+          }
+          return removeTypeAndPinnedField(newItem);
+        });
+        pastHistory.push(newInnerArray);
+      });
+
+      requestData.pasthistory = pastHistory.flat();
     }
 
     setValue("");
 
     const apiName = apiMapping[selected];
-
+    console.log("requestData: ", requestData);
     if (apiName) {
       axios
         .post(`${apiURL}/ai/${apiName}`, JSON.stringify(requestData), {
@@ -743,6 +714,9 @@ const Chat = ({
     //   .then((response) => {
     //     setHistory([]);
     //   });
+  };
+  const clearInput = () => {
+    setValue("");
   };
 
   const handleSelectionChange = (e) => {
@@ -908,7 +882,7 @@ const Chat = ({
               {chatHistory.map((messages, msgIndex) => (
                 <div key={msgIndex} className="message-group">
                   {messages.map((message, index) => (
-                    <span key={`${msgIndex}-${index}`}
+                    <span
                       ref={
                         index === pinnedMessageIndex &&
                         msgIndex === pinnedMessageMsgIndex
@@ -917,7 +891,7 @@ const Chat = ({
                       }
                     >
                       <Text_History
-                        key={`${msgIndex}-${index}`}
+                        key={index}
                         msgIndex={msgIndex}
                         data={message}
                         chatHistory={chatHistory}
@@ -951,7 +925,7 @@ const Chat = ({
               {imgHistory.map((data, msgIndex) => (
                 <div key={msgIndex} className="message-group">
                   {data.map((image_data, index) => (
-                    <span key={`${msgIndex}-${index}`}
+                    <span
                       ref={
                         index === pinnedMessageIndex &&
                         msgIndex === pinnedMessageMsgIndex
@@ -960,7 +934,7 @@ const Chat = ({
                       }
                     >
                       <Img_History
-                        key={`${msgIndex}-${index}`}
+                        key={index}
                         data={image_data}
                         msgIndex={msgIndex}
                         imgHistory={imgHistory}
@@ -1005,10 +979,11 @@ const Chat = ({
                         “Rewrite this paragraph to be more concise...”
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                      &quot;Summarize this article in 5 bullet points...&quot;
-                  </div>
+                        "Summarize this article in 5 bullet points..."
+                      </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                      &quot;Based on this data, predict future trends in the market.&quot;
+                        "Based on this data, predict future trends in the
+                        market."
                       </div>
                     </div>
                   </>
@@ -1020,13 +995,13 @@ const Chat = ({
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                      &quot;Tarzan riding a lion&quot;
+                        “Tarzan riding a lion”
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                      &quot;Detailed oil painting of Muhammad Ali&quot;
+                        "Detailed oil painting of Muhammad Ali"
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                      &quot;Modern home in the hills of jungle&quot;
+                        "Mordern home in the hills of jungle"
                       </div>
                     </div>
                   </>
@@ -1051,54 +1026,6 @@ const Chat = ({
                     </span>
                   </p>
                 </div>
-
-                {/* <div className="flex flex-row gap-6 font-nasalization text-[#C2C2C2] text-sm font-normal mx-auto my-11">
-                {imageModel == false ? (
-                  <Tabs
-                    size="sm"
-                    radius="lg"
-                    variant="light"
-                    selectedKey={selected}
-                    onSelectionChange={setSelected}
-                    classNames={{
-                      tabList: "w-full relative border-divider p-0",
-                      cursor: "w-full bg-[#2E353C] p-0",
-                      tabContent:
-                        "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization",
-                    }}
-                    aria-label="Tabs variants"
-                  >
-                    {textStatus.map(
-                      (item, index) =>
-                        item && (
-                          <Tab key={textList[index]} title={textList[index]} />
-                        )
-                    )}
-                  </Tabs>
-                ) : (
-                  <Tabs
-                    size="sm"
-                    radius="lg"
-                    variant="light"
-                    selectedKey={imgSelected}
-                    onSelectionChange={setImgSelected}
-                    classNames={{
-                      tabList: "w-full relative border-divider p-0",
-                      cursor: "w-full bg-[#2E353C] p-0",
-                      tabContent:
-                        "group-data-[selected=true]:text-[#FFF] p-0 font-nasalization",
-                    }}
-                    aria-label="Tabs variants"
-                  >
-                    {imgStatus.map(
-                      (item, index) =>
-                        item && (
-                          <Tab key={imgList[index]} title={imgList[index]} />
-                        )
-                    )}
-                  </Tabs>
-                )}
-              </div> */}
               </div>
             </>
           )
@@ -1121,121 +1048,49 @@ const Chat = ({
           >
             Aspect Ratio
           </p>
-          <Select
-            aria-label="eee"
-            radius="full"
-            selectedKeys={[ratioValue]}
-            onChange={handleSelectionChange}
-            labelPlacement="outside"
-            className="gap-0 p-0 max-w-[90px] font-nasalization text-[#FFF] text-sm font-normal aria-disabled:label"
-            classNames={{
-              trigger: "bg-[#2E353C] text-[#FFF]",
-              listbox: "bg-[#2E353C] m-0 p-0 text-[#FFF]",
-              popoverContent: "bg-[#2E353C]",
-            }}
-          >
-            <SelectItem
-              key={0}
-              value={0}
-              className="font-nasalization font-normal text-sm"
-            >
-              1:1
-            </SelectItem>
-            <SelectItem
-              key={1}
-              value={1}
-              className="font-nasalization font-normal text-sm"
-            >
-              9:7
-            </SelectItem>
-            <SelectItem
-              key={2}
-              value={2}
-              className="font-nasalization font-normal text-sm"
-            >
-              19:13
-            </SelectItem>
-            <SelectItem
-              key={3}
-              value={3}
-              className="font-nasalization font-normal text-sm"
-            >
-              7:4
-            </SelectItem>
-            <SelectItem
-              key={4}
-              value={4}
-              className="font-nasalization font-normal text-sm"
-            >
-              7:9
-            </SelectItem>
-            <SelectItem
-              key={5}
-              value={5}
-              className="font-nasalization font-normal text-sm"
-            >
-              13:19
-            </SelectItem>
-            <SelectItem
-              key={6}
-              value={6}
-              className="font-nasalization font-normal text-sm"
-            >
-              4:7
-            </SelectItem>
-            <SelectItem
-              key={7}
-              value={7}
-              className="font-nasalization font-normal text-sm"
-            >
-              5:12
-            </SelectItem>
-          </Select>
+
+          <DualListBox />
         </div>
         <div className="flex flx-row items-end gap-2 w-full max-msm:mb-3">
-          {imageModel == false ? (
-            <Tooltip
-              content={<p className="text-[#FFF]">Erase Context</p>}
-              showArrow
-              placement="bottom"
-              delay={0}
-              closeDelay={0}
-              className=""
-              classNames={{
-                base: ["before:bg-[##2E353C]"],
-                content: [
-                  "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
-                ],
-              }}
-              motionProps={{
-                variants: {
-                  exit: {
-                    opacity: 0,
-                    transition: {
-                      duration: 0.1,
-                      ease: "easeIn",
-                    },
-                  },
-                  enter: {
-                    opacity: 1,
-                    transition: {
-                      duration: 0.15,
-                      ease: "easeOut",
-                    },
+          <Tooltip
+            content={<p className="text-[#FFF]">Erase Context</p>}
+            showArrow
+            placement="bottom"
+            delay={0}
+            closeDelay={0}
+            className=""
+            classNames={{
+              base: ["before:bg-[##2E353C]"],
+              content: ["bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2"],
+            }}
+            motionProps={{
+              variants: {
+                exit: {
+                  opacity: 0,
+                  transition: {
+                    duration: 0.1,
+                    ease: "easeIn",
                   },
                 },
-              }}
-            >
-              <Image
-                alt=""
-                width={20}
-                height={20}
-                src={"/svg/inputedit.svg"}
-                onClick={() => clearHistory()}
-                className="cursor-pointer mb-3 max-lg:hidden"
-              />
-            </Tooltip>
-          ) : null}
+                enter: {
+                  opacity: 1,
+                  transition: {
+                    duration: 0.15,
+                    ease: "easeOut",
+                  },
+                },
+              },
+            }}
+          >
+            <Image
+              alt=""
+              width={20}
+              height={20}
+              src={"/svg/inputedit.svg"}
+              onClick={() => clearInput()}
+              className="cursor-pointer mb-3 max-lg:hidden"
+            />
+          </Tooltip>
           <div className="relative flex items-end gap-4 rounded-3xl border-[2px] bprder-solid border-[#0A84FF] w-full h-auto p-[2px]">
             {imageModel == false ? (
               <ConfigProvider
@@ -1248,7 +1103,7 @@ const Chat = ({
                 }}
               >
                 <Dropdown
-                  overlay={menu}
+                  overlay={textMenu}
                   trigger={["click"]}
                   placement="bottomRight"
                 >
@@ -1273,15 +1128,45 @@ const Chat = ({
                   />
                 </Dropdown>
               </ConfigProvider>
-            ) : null}
+            ) : (
+              <ConfigProvider
+                theme={{
+                  token: {
+                    colorBgBase: "#181818",
+                    borderRadius: 20,
+                    colorBorder: "#313535",
+                  },
+                }}
+              >
+                <Dropdown
+                  overlay={imageMenu}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <Image
+                    alt=""
+                    width={34}
+                    height={34}
+                    src={
+                      imageModelIndex === 0
+                        ? "/models/dall-e.png"
+                        : imageModelIndex === 1
+                        ? "/models/s-diffu.png"
+                        : imageModelIndex === 2
+                        ? "/models/s-xl.png"
+                        : ""
+                    }
+                    className="mb-[2px] ml-1"
+                  />
+                </Dropdown>
+              </ConfigProvider>
+            )}
             <Image
               alt=""
               width={11}
               height={20}
               src={"svg/attach.svg"}
-              className={` ${
-                imageModel == false ? "ml-1" : "ml-5"
-              } max-h-10 mb-2`}
+              className={`ml-1 max-h-10 mb-2`}
             />
             <textarea
               id="review-text"
