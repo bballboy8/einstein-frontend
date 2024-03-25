@@ -118,28 +118,28 @@ const RegistrationOptions = () => {
       imageUrl: "svg/email.svg",
       altText: "Register with Email Icon",
       buttonText: "Register with Email",
-      extraClasses: "bg-white text-gray-500",
+      extraClasses: "bg-white text-gray-500 gap-1 text-[20px]",
       onClick: toggleRegistrationForm,
     },
     {
       imageUrl: "svg/google.svg",
       altText: "Register with Google Icon",
       buttonText: "Register with Google",
-      extraClasses: "bg-white text-gray-500",
+      extraClasses: "bg-white text-gray-500 gap-1 text-[20px]",
       onClick: () => login(),
     },
     {
       imageUrl: "svg/apple.svg",
       altText: "Register with Apple Icon",
       buttonText: "Register with Apple",
-      extraClasses: "bg-black text-white",
+      extraClasses: "bg-black text-white gap-1 text-[20px]",
       onClick: () => alert("Register with Apple clicked"),
     },
     {
       imageUrl: "svg/facebook.svg",
       altText: "Register with Facebook Icon",
       buttonText: "Register with Facebook",
-      extraClasses: "bg-blue-600 text-white",
+      extraClasses: "bg-blue-600 text-white gap-1 text-[20px]",
       onClick: () => alert("Register with Facebook clicked"),
     },
   ];
@@ -148,7 +148,7 @@ const RegistrationOptions = () => {
     <div className="h-screen overflow-auto bg-[length:1920px_1024px] bg-[url('/background.jpg')] flex flex-col items-center justify-center">
       {showRegistrationOptions && (
         <div className="flex items-center justify-center min-h-screen">
-          <section className="flex flex-col items-center px-7 pt-4 pb-6 text-xl font-medium text-white rounded-xl bg-zinc-800 max-w-[400px]">
+          <section className="flex flex-col items-center px-7 pt-4 pb-6 text-xl font-medium text-white rounded-[10px] bg-[#2D2D2D] min-w-[400px]">
             <header className="flex justify-between w-full  mb-4"></header>
             <main className="w-full">
               {buttonsData.map((button, index) => (
@@ -166,10 +166,10 @@ const RegistrationOptions = () => {
               <div
                 tabIndex="0"
                 role="button"
-                className="text-center mt-5 cursor-pointer text-white"
+                className="text-center mt-3 cursor-pointer text-white"
                 onClick={() => router.push("/signin")}
               >
-                <span style={{ fontSize: "0.8rem" }}>
+                <span style={{ fontSize: "15px" }}>
                   Have account? Sign In
                 </span>
               </div>
@@ -320,7 +320,7 @@ const RegistrationForm = ({ onClose }) => {
   };
 
   return (
-    <form className="flex flex-col px-12 pt-6 pb-9 text-base font-medium text-white rounded-xl bg-zinc-800 max-w-[800px]">
+    <form className="flex flex-col px-6 pt-6 pb-9 text-base font-medium text-white rounded-[10px] bg-[#2D2D2D] min-w-[400px]">
       <img
         loading="lazy"
         src="svg/close.svg"
@@ -328,7 +328,7 @@ const RegistrationForm = ({ onClose }) => {
         onClick={onClose}
         className="self-end aspect-square w-[18px]"
       />
-      <h1 className="self-center mt-1.5 text-5xl text-white font-nasalization">
+      <h1 className="self-center mt-1.5 text-5xl text-white font-nasalization mb-4">
         Register
       </h1>
       <InputField
@@ -373,10 +373,10 @@ const RegistrationForm = ({ onClose }) => {
       <div
         tabIndex="0"
         role="button"
-        className="flex justify-center items-center px-16 py-2.5 mt-5 text-white rounded-xl border border-indigo-400 border-solid text-center"
+        className="flex justify-center items-center px-16 py-2.5 mt-5 text-white rounded-xl border border-indigo-400 border-solid text-center font-inter"
         onClick={() => router.push("/signin")}
       >
-        <span style={{ fontSize: "0.8rem" }}>Have account? Sign In</span>
+        <span className="font-inter" style={{ fontSize: "15px" }}>Have account? Sign In</span>
       </div>
     </form>
   );
@@ -401,7 +401,7 @@ const DigitCodeConfirmation = ({ onClose }) => {
   };
 
   return (
-    <section className="flex flex-col px-6 pt-5 pb-9 rounded-xl bg-zinc-800 max-w-[400px]">
+    <section className="flex flex-col px-6 pt-5 pb-9 rounded-[10px] bg-[#2D2D2D] min-w-[400px]">
       <header className="flex justify-end">
         <img
           loading="lazy"
@@ -425,7 +425,7 @@ const DigitCodeConfirmation = ({ onClose }) => {
         ))}
       </div>
       <button
-        className={`justify-center items-center px-16 py-2.5 mt-9 text-white rounded-xl bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300`}
+        className={`justify-center items-center px-16 py-2 mt-9 text-white rounded-xl bg-gradient-to-r from-[#7B88FF] to-[#64D0FF] hover:bg-blue-700 focus:ring-4 focus:ring-blue-300`}
         tabIndex="0"
       >
         Confirm
@@ -438,7 +438,7 @@ const CodeInput = ({ onDigitInput, index, forwardRef }) => (
   <input
     ref={forwardRef}
     className="flex-1 shrink-0 rounded-lg border border-solid border-neutral-400 h-[58px] text-center text-xl font-medium text-white bg-transparent"
-    style={{ width: "48px" }}
+    style={{ width: "54px", height: "58px" }}
     maxLength="1"
     onChange={(e) => onDigitInput(e, index)}
     type="text"

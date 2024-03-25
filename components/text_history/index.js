@@ -62,6 +62,9 @@ const Text_History = ({
     useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [contextedMenuIndex, setContextedMenuIndex] = useState();
+  const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
+  const [totalMsg, setTotalMsg] = useState(0);
+  const [currentMsg, setCurrentMsg] = useState("");
 
   // Function to handle right-click on user messages
   const handleContextMenu = (e, index, pinned = false) => {
@@ -101,7 +104,6 @@ const Text_History = ({
 
   const submitEdit = (index, msgIndex) => {
     console.log("Submit Edit Clicked! Now call API!");
-
     const updatedChatHistory = [...chatHistory];
     updatedChatHistory[msgIndex][index].content = editingMessage;
 
@@ -156,12 +158,11 @@ const Text_History = ({
     setLoading(true);
     setID(i);
     let pasthistory = [];
-    console.log("typeOfModel::: ", typeOfModel);
-    console.log("chatHistory: ", chatHistory);
     chatHistory.slice(0, i + 1).map((item) => {
       let data = item.slice(0, -1); // Remove the last element of the array
       pasthistory.push(data);
     });
+    console.log("typeOfModel", typeOfModel);
 
     let data = {
       historyData: pasthistory,
@@ -180,6 +181,10 @@ const Text_History = ({
       .then((response) => {
         console.log(response.data.data);
         let a = [...chatHistory];
+        const chat_content = response.data.data;
+        setCurrentMsgIndex(chat_content.length - 1);
+        setTotalMsg(chat_content.length);
+        setCurrentMsg(chat_content[chat_content.length - 1]);
         a[msgIndex][1]["content"] = response.data.data;
         a[msgIndex][1]["role"] = "assistant";
         a[msgIndex][1]["type"] = typeOfModel;
@@ -274,6 +279,30 @@ const Text_History = ({
     // Reset textAnimationIndex when typing ends
     setTextAnimationIndex(-1);
   }
+
+  useEffect(() => {
+    // Adjust initial width and height based on content
+    if (Array.isArray(data.content) && data.content.length > 0) {
+      setCurrentMsgIndex(data.content.length - 1);
+      setTotalMsg(data.content.length);
+      setCurrentMsg(data.content[data.content.length - 1]);
+    } else {
+      setCurrentMsg(data.content);
+    }
+  }, [data]);
+
+  const handleLeftClick = () => {
+    if (currentMsgIndex > 0) {
+      setCurrentMsgIndex(currentMsgIndex - 1);
+      setCurrentMsg(data.content[currentMsgIndex - 1]);
+    }
+  };
+  const handleRightClick = () => {
+    if (currentMsgIndex < totalMsg - 1) {
+      setCurrentMsgIndex(currentMsgIndex + 1);
+      setCurrentMsg(data.content[currentMsgIndex + 1]);
+    }
+  };
   return (
     <div key={index} className="flex flex-col w-full">
       {/* user compannent */}
@@ -491,33 +520,88 @@ const Text_History = ({
             </div>
           </div>
           {loading == true && id == index ? (
-            <div className="flex flex-row w-full justify-center mb-2">
-              <div className="w-[100px] bg-[#23272B] rounded-[20px] mt-4">
-                <div className="snippet" data-title="dot-pulse">
-                  <div className="stage">
-                    <div className="dot-pulse"></div>
+            <div
+              className={`flex flex-col w-full items-start ${
+                blur && index == id ? "z-[999]" : null
+              }`}
+            >
+              <div className="flex flex-row mb-10">
+                <div className="w-[100px]  mt-4">
+                  <div className="snippet" data-title="dot-pulse">
+                    <div className="stage">
+                      <div className="single-dot-loader"></div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
             <div className="flex flex-col max-w-max mr-[138px] max-mxl:mr-[220px] max-xl:mr-[100px] max-msm:mr-12 mb-4">
-              <div
-                className={`mt-4 bg-[#23272B] max-w-max rounded-[20px] py-3 px-6`}
-                onContextMenu={(e) => handleContextMenu(e, index, data.pinned)}
-              >
-                {textAnimationIndex == msgIndex ? (
-                  <Typewriter
-                    text={data.content}
-                    delay={15}
-                    onTypingEnd={handleTypingEnd}
-                  />
-                ) : (
-                  <ReactMarkDown data={data.content} />
-                )}
-              </div>
+              {Array.isArray(data.content) ? (
+                <div
+                  className={`mt-4 bg-[#23272B] max-w-max rounded-[20px] py-3 px-6`}
+                  onContextMenu={(e) =>
+                    handleContextMenu(e, index, data.pinned)
+                  }
+                >
+                  {textAnimationIndex == msgIndex ? (
+                    <Typewriter
+                      text={currentMsg}
+                      delay={15}
+                      onTypingEnd={handleTypingEnd}
+                    />
+                  ) : (
+                    <ReactMarkDown data={currentMsg} />
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={`mt-4 bg-[#23272B] max-w-max rounded-[20px] py-3 px-6`}
+                  onContextMenu={(e) =>
+                    handleContextMenu(e, index, data.pinned)
+                  }
+                >
+                  {textAnimationIndex == msgIndex ? (
+                    <Typewriter
+                      text={data.content}
+                      delay={15}
+                      onTypingEnd={handleTypingEnd}
+                    />
+                  ) : (
+                    <ReactMarkDown data={data.content} />
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-row w-full justify-between pl-7 pr-10 mt-3">
-                <div className="flex flex-row gap-6">
+                <div className="flex flex-row gap-5">
+                  {Array.isArray(data.content) && (
+                    <div className="flex text-[#fff] text-[14.2px] font-helvetica mt-[3px]">
+                      <div onClick={handleLeftClick}>
+                        <Image
+                          alt=""
+                          width={7}
+                          height={12}
+                          src={`svg/Icon-left.svg`}
+                          className="cursor-pointer mr-[5px] mt-[3px]"
+                        />
+                      </div>
+                      <p className="leading-normal text-[#fff] text-[14.2px] font-helvetica  tracking-[2px]">
+                        {currentMsgIndex + 1} / {totalMsg}
+                      </p>
+
+                      <div onClick={handleRightClick}>
+                        <Image
+                          alt=""
+                          width={7}
+                          height={12}
+                          src={`svg/Icon-right.svg`}
+                          className="cursor-pointer ml-[3px] mt-[3px]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <CopyToClipboard
                     text={data.content}
                     onCopy={() => {
