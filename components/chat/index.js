@@ -16,6 +16,7 @@ import { Input } from "@nextui-org/react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { ChevronUpIcon } from "@heroicons/react/24/outline";
 import PrivacyPolicyModal from "./privacyPolicyModal";
+import CopyLink from "./CopyLink";
 
 import DualListBox from "./List";
 
@@ -50,6 +51,7 @@ const Chat = ({
   imgHistoryData,
   fullName,
   setFullName,
+  setToggleStatus1,
 }) => {
   const { textStatus, setTextStatus } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
@@ -75,6 +77,7 @@ const Chat = ({
   const [showSearch, setShowSearch] = useState(false);
   const textAreaRef = useRef(null);
   const req_qa_box = useRef(null);
+  const [inputPlaceholder, setInputPlaceholder] = useState("");
 
   const [isPrivacyPolicyModalOpen, setIsPrivacyPolicyModalOpen] =
     useState(false);
@@ -89,7 +92,10 @@ const Chat = ({
     setPinnedMessageMsgIndex(index);
   };
   const [textAnimationIndex, setTextAnimationIndex] = useState(-1);
-
+  const [replyStatus1, setReplyStatus1] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [replyMsgIndex, setReplyMsgIndex] = useState(0);
+  const [replyIndex, setReplyIndex] = useState(0);
   const OnSetPinnedMessageMsgType = (value) => {
     setPinnedMessageMsgType(value);
   };
@@ -144,12 +150,23 @@ const Chat = ({
     console.log(number);
 
     if (imageModel == false) {
+      setReplyStatus1(false);
       setTextModel(number);
       setSelected(textList[number]);
+      setInputPlaceholder(`Message ${textList[number]}`);
     } else {
+      setReplyStatus1(false);
       setImageModelIndex(number);
       setImgSelected(imgList[number]);
+      setInputPlaceholder(`Message ${imgList[number]}`);
     }
+  };
+
+  const handleReplyClose = () => {
+    setReplyStatus1(false);
+    setReplyText("");
+    setReplyIndex(0);
+    setReplyMsgIndex(0);
   };
 
   const imageMenu = (
@@ -438,10 +455,12 @@ const Chat = ({
 
   useEffect(() => {
     setModelType(selected);
+    setInputPlaceholder(`Message ${selected}`);
   }, [selected]);
 
   useEffect(() => {
     setImgModelType(imgSelected);
+    setInputPlaceholder(`Message ${imgSelected}`);
   }, [imgSelected]);
 
   useEffect(() => {
@@ -452,6 +471,11 @@ const Chat = ({
     setImgHistory(imgHistoryData);
   }, [imgHistoryData]);
 
+  // useEffect(() => {}, [imgModelType]);
+  // useEffect(() => {
+  //   setInputPlaceholder(`Message ${textModel}`);
+  // }, [textModel]);
+
   useEffect(() => {
     if (imageModel == false) {
       if (chatHistoryID != "") {
@@ -459,6 +483,7 @@ const Chat = ({
         GetHistoryDataByID(chatHistoryID);
         setPinMessageVisible(false);
       }
+      setInputPlaceholder(`Message ${textList[0]}`);
     } else {
       setPinMessageVisible(false);
 
@@ -466,12 +491,14 @@ const Chat = ({
         setID("");
         GetHistoryDataByID(imgHistoryID);
       }
+      setInputPlaceholder(`Message ${imgList[0]}`);
     }
   }, [chatHistoryID, imgHistoryID, imageModel]);
 
   useAutosizeTextArea(textAreaRef.current, value);
 
   const GetHistoryDataByID = (id) => {
+    setReplyStatus1(false);
     if (imageModel == false) {
       axios
         .get(`${apiURL}/ai/gethistoryByID/${id}`, {
@@ -492,6 +519,7 @@ const Chat = ({
           });
           setTextModel(textList.indexOf(response.data.data.type));
           setType(response.data.data.type);
+          setInputPlaceholder(`Message ${response.data.data.type}`);
           setChatHistory(response.data.data.history);
           setTextAnimationIndex(-1);
         });
@@ -514,6 +542,7 @@ const Chat = ({
           });
           setImageModelIndex(imgList.indexOf(response.data.data.type));
           setImgSelected(imgList[imageModelIndex]);
+          setInputPlaceholder(`Message ${response.data.data.type}`);
           setImgModelType(response.data.data.type);
           setImgHistory(response.data.data.history);
         });
@@ -523,6 +552,7 @@ const Chat = ({
   function removeTypeAndPinnedField(obj) {
     delete obj.type;
     delete obj.pinned;
+    delete obj.reply;
     return obj;
   }
 
@@ -557,12 +587,21 @@ const Chat = ({
     setSwitchStatus(false);
     setChatStatus(true);
     let newHistory = [...chatHistory];
-    newHistory.push([{ role: "user", content: value }, { role: "loading" }]);
+    if (replyStatus1 == true) {
+      newHistory.push([
+        { role: "user", content: value, reply: replyText },
+        { role: "loading" },
+      ]);
+    } else {
+      newHistory.push([{ role: "user", content: value }, { role: "loading" }]);
+    }
+
     const loadingIndex = chatHistoryID == "" ? 0 : newHistory.length - 1;
     setTextAnimationIndex(loadingIndex);
     setChatHistory(newHistory);
 
     const handleResponse = (response, modelType, chatHistoryID) => {
+      console.log("handle response", response);
       if (loadingIndex != -1) {
         const updatedItem = [...newHistory[loadingIndex]];
         updatedItem[1].role = "assistant";
@@ -596,6 +635,10 @@ const Chat = ({
       type: selected,
       userID: localStorage.getItem("userID"),
     };
+    if (replyStatus1 == true) {
+      requestData.reply = replyText;
+    }
+    console.log("requestData", requestData);
 
     if (chatHistoryID != "") {
       const pastHistory = [];
@@ -614,6 +657,13 @@ const Chat = ({
     }
 
     setValue("");
+    setBlur(false);
+    if (replyStatus1 == true) {
+      setReplyStatus1(false);
+      setReplyMsgIndex(0);
+      setReplyText("");
+      setReplyIndex(0);
+    }
 
     const apiName = apiMapping[selected];
     console.log("requestData: ", requestData);
@@ -678,6 +728,7 @@ const Chat = ({
       userID: localStorage.getItem("userID"),
       size: ratio,
     };
+
     if (imgHistoryID == "") {
       setChatTitle(value);
     }
@@ -767,11 +818,26 @@ const Chat = ({
 
   const OnSetModalType = (type) => {
     setTextModel(textList.indexOf(type));
+    setInputPlaceholder(`Message ${type}`);
     setSelected(type);
   };
 
   const handleShowSearch = () => {
     setShowSearch(!showSearch);
+  };
+
+  const OnSetToggleStatus = (value) => {
+    setToggleStatus1(value);
+  };
+
+  const OnSetReplyStatus = (status, index, msgIndex, text) => {
+    if (status) {
+      console.log("reply", status, index, msgIndex, text);
+      setReplyStatus1(status);
+      setReplyText(text);
+      setReplyIndex(index);
+      setReplyMsgIndex(msgIndex);
+    }
   };
 
   return (
@@ -791,9 +857,7 @@ const Chat = ({
               : chatTitle.slice(0, 30).concat("...")}
           </p>
           <div className="flex">
-            <div className="flex rounded-3xl p-3 shadow-[0_0px_1px_0px_rgba(0,0,0,0.25)]">
-              <Image alt="" width={18} height={18} src={"svg/link-icon.svg"} />
-            </div>
+            <CopyLink />
             <div
               className="flex rounded-3xl p-4 bg-[#272D33] rounded-[24px] ml-[3px] cursor-pointer"
               onClick={handleShowSearch}
@@ -915,6 +979,8 @@ const Chat = ({
                         setModelType={OnSetModalType}
                         setTextAnimationIndex={setTextAnimationIndex}
                         textAnimationIndex={textAnimationIndex}
+                        setToggleStatus={OnSetToggleStatus}
+                        setReplyStatus={OnSetReplyStatus}
                       />
                     </span>
                   ))}
@@ -955,6 +1021,7 @@ const Chat = ({
                         setPinnedMessageMsgIndex={OnSetPinnedMessageMsgIndex}
                         setPinnedMessageMsgType={OnSetPinnedMessageMsgType}
                         checkEditPinnedMessage={OnCheckEditPinnedMessage}
+                        setToggleStatus={OnSetToggleStatus}
                       />
                     </span>
                   ))}
@@ -1052,6 +1119,28 @@ const Chat = ({
 
           <DualListBox />
         </div>
+        {replyStatus1 == true && (
+          <div className="pl-[28px] min-w-[100%] flex flex-row w-full ">
+            <div className="border border-[#085fb7] rounded-[12px] px-[20px] py-[22px] relative w-full">
+              <span onClick={handleReplyClose}>
+                <Image
+                  className="absolute right-[10px] top-[10px]"
+                  alt=""
+                  width={12}
+                  height={112}
+                  src={"svg/close.svg"}
+                />
+              </span>
+
+              <span className="text-[#8E8E8E] text-[12px] font-normal font-helvetica">
+                Replying to:{" "}
+              </span>
+              <p className="text-[#fff] text-[14px] font-normal font-helvetica mt-[8px] border-l-1 border-[@fff] pl-[12px] py-[2px]">
+                {replyText}
+              </p>
+            </div>
+          </div>
+        )}
         <div className="flex flx-row items-end gap-2 w-full max-msm:mb-3">
           <Tooltip
             content={<p className="text-[#FFF]">Erase Context</p>}
@@ -1094,41 +1183,43 @@ const Chat = ({
           </Tooltip>
           <div className="relative flex items-end gap-4 rounded-3xl border-[2px] bprder-solid border-[#0A84FF] w-full h-auto p-[2px]">
             {imageModel == false ? (
-              <ConfigProvider
-                theme={{
-                  token: {
-                    colorBgBase: "#181818",
-                    borderRadius: 20,
-                    colorBorder: "#313535",
-                  },
-                }}
-              >
-                <Dropdown
-                  overlay={textMenu}
-                  trigger={["click"]}
-                  placement="bottomRight"
+              <>
+                <ConfigProvider
+                  theme={{
+                    token: {
+                      colorBgBase: "#181818",
+                      borderRadius: 20,
+                      colorBorder: "#313535",
+                    },
+                  }}
                 >
-                  <Image
-                    alt=""
-                    width={34}
-                    height={34}
-                    src={
-                      textModel === 0
-                        ? "/models/gpt3.png"
-                        : textModel === 1
-                        ? "/models/gpt4.png"
-                        : textModel === 2
-                        ? "/models/gemini.png"
-                        : textModel === 3
-                        ? "/models/perplexity.png"
-                        : textModel === 4
-                        ? "/models/mistral.png"
-                        : ""
-                    }
-                    className="mb-[2px] ml-1"
-                  />
-                </Dropdown>
-              </ConfigProvider>
+                  <Dropdown
+                    overlay={textMenu}
+                    trigger={["click"]}
+                    placement="bottomRight"
+                  >
+                    <Image
+                      alt=""
+                      width={34}
+                      height={34}
+                      src={
+                        textModel === 0
+                          ? "/models/gpt3.png"
+                          : textModel === 1
+                          ? "/models/gpt4.png"
+                          : textModel === 2
+                          ? "/models/gemini.png"
+                          : textModel === 3
+                          ? "/models/perplexity.png"
+                          : textModel === 4
+                          ? "/models/mistral.png"
+                          : ""
+                      }
+                      className="mb-[2px] ml-1"
+                    />
+                  </Dropdown>
+                </ConfigProvider>
+              </>
             ) : (
               <ConfigProvider
                 theme={{
@@ -1162,6 +1253,7 @@ const Chat = ({
                 </Dropdown>
               </ConfigProvider>
             )}
+
             <Image
               alt=""
               width={11}
@@ -1169,12 +1261,13 @@ const Chat = ({
               src={"svg/attach.svg"}
               className={`ml-1 max-h-10 mb-2`}
             />
+
             <textarea
               id="review-text"
               onChange={handleChange}
               value={value}
               onKeyDown={(e) => handleKeyDown(e)}
-              placeholder={blur ? "Reply" : "Message Einstein"}
+              placeholder={blur ? "Reply" : inputPlaceholder}
               ref={textAreaRef}
               rows={1}
               cols={0}

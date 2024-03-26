@@ -569,10 +569,10 @@ const Model_Interface = () => {
             <Tab key="code" title="Code">
               <div className="w-full px-5 mt-[80px]">
                 <div className="flex flex-col gap-[55px] justify-center">
-                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px]">
+                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px] text-center">
                     We thank you for your interest. These models are currently
-                    in beta testing. To gain early access, please join our
-                    waitlist. Meanwhile, feel free to use our text or image
+                    in beta testing. To gain early access, please <br/> <a href="#" className="text-[#0A84FF]">join our
+                    waitlist</a>. Meanwhile, feel free to use our text or image
                     model generation services
                   </p>
                   <div className="flex flex-row gap-6 text-base font-nasalization justify-center">
@@ -599,10 +599,10 @@ const Model_Interface = () => {
             <Tab key="video" title="Video">
               <div className="w-full px-5 mt-[80px]">
                 <div className="flex flex-col gap-[55px]">
-                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px]">
+                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px] text-center">
                     We thank you for your interest. These models are currently
-                    in beta testing. To gain early access, please join our
-                    waitlist. Meanwhile, feel free to use our text or image
+                    in beta testing. To gain early access, please <br/> <a href="#" className="text-[#0A84FF]">join our
+                    waitlist</a>. Meanwhile, feel free to use our text or image
                     model generation services
                   </p>
                   <div className="flex flex-row gap-6 text-base font-nasalization justify-center">
@@ -629,10 +629,10 @@ const Model_Interface = () => {
             <Tab key="audio" title="Audio">
               <div className="w-full px-5 mt-[80px]">
                 <div className="flex flex-col gap-[55px]">
-                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px]">
+                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px] text-center">
                     We thank you for your interest. These models are currently
-                    in beta testing. To gain early access, please join our
-                    waitlist. Meanwhile, feel free to use our text or image
+                    in beta testing. To gain early access, please <br/> <a href="#" className="text-[#0A84FF]">join our
+                    waitlist</a>. Meanwhile, feel free to use our text or image
                     model generation services
                   </p>
                   <div className="flex flex-row gap-6 text-base font-nasalization justify-center">

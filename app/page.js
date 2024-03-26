@@ -34,6 +34,10 @@ export default function Home() {
     setChatTitle("New Chat");
   };
 
+  const onSetToggleStatus = (value) => {
+    setToggleStatus(0);
+  };
+
   return (
     <div className="h-screen flex flex-col max-msm:bg-[#000]">
       <Header
@@ -80,6 +84,7 @@ export default function Home() {
             imgHistoryData={imgHistoryData}
             fullName={fullName}
             setFullName={setFullName}
+            setToggleStatus1={onSetToggleStatus}
           />
         ) : (
           <Model_Interface />

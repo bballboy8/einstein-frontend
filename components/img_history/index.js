@@ -183,6 +183,7 @@ const Img_History = ({
   setPinnedMessageMsgType,
   msgIndex,
   checkEditPinnedMessage,
+  setToggleStatus,
 }) => {
   const { imgStatus, setImgStatus } = useModelStatus();
   const [imageList, setImageList] = useState([
@@ -388,6 +389,10 @@ const Img_History = ({
     const updatedImageHistory = [...imgHistory];
     delete updatedImageHistory[msgIndex][index].pinned;
     setImgHistory(updatedImageHistory);
+  };
+
+  const handleToggleStatus = () => {
+    setToggleStatus(0);
   };
 
   return (
@@ -601,7 +606,11 @@ const Img_History = ({
                   <div>
                     <p className="text-[#FFF]">
                       Add more{" "}
-                      <Link href="" className="text-[#0A84FF]">
+                      <Link
+                        href=""
+                        onClick={handleToggleStatus}
+                        className="text-[#0A84FF]"
+                      >
                         models
                       </Link>
                     </p>
@@ -764,9 +773,7 @@ const Img_History = ({
                             height={24}
                             className="cursor-pointer"
                             src={"/svg/download.svg"}
-                            onClick={() =>
-                              download(imgHistory[id].content[number].url)
-                            }
+                            onClick={() => download(data.content[number].url)}
                           />
                           <Image
                             alt=""
@@ -781,7 +788,7 @@ const Img_History = ({
                       <ModalBody>
                         {upScale == false ? (
                           <div className="grid grid-cols-2 max-w-[1000px] mx-auto my-auto gap-1 w-full">
-                            {imgHistory[id].content.map((item, i) => (
+                            {data.content.map((item, i) => (
                               <Image
                                 key={i}
                                 alt=""
@@ -835,7 +842,7 @@ const Img_History = ({
                                   ? "aspect-5/12"
                                   : "aspect-1/1"
                               }`}
-                              src={imgHistory[id].content[number].url}
+                              src={data.content[number].url}
                             />
                           </div>
                         )}

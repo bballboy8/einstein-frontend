@@ -197,7 +197,7 @@ const Header = ({
       )}
 
       <div className="flex flex-row gap-4 mr-5 max-msm:mr-5">
-        {userActive == true ? (
+        {/* {userActive == true ? (
           <Button className="h-14 bg-gradient-to-r from-[#7b88ff] to-[#68c3ff] rounded-full min-w-[115px] text-[#fff] leading-normal font-helvetica h-[42px]">
             <Image
               alt="user"
@@ -208,7 +208,7 @@ const Header = ({
             />
             Sign in
           </Button>
-        ) : null}
+        ) : null} */}
 
         <Tooltip
           content={<p className="text-[#FFF]">Toggle models</p>}
