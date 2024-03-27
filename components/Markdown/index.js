@@ -1,21 +1,26 @@
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeMathjax from "rehype-mathjax";
 import remarkMath from "remark-math";
 import rehypeRaw from "rehype-raw";
 import { dracula, CopyBlock } from "react-code-blocks";
+import TextSelectorok from "../text_history/Reply";
 
 const ReactMarkDown = ({ data }) => {
+  const onSetReplyText = (text) => {
+    console.log("react mark down selected text", text);
+  };
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeMathjax, rehypeRaw]}
       className="user-prompt"
       components={{
+        // Custom components for styling and rendering
         code({ inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
           if (!inline && match) {
-            //const codeString = String(children).replace(/\n$/, "");
             const codeString = String(children);
             console.log("codeString", codeString);
             return (
@@ -92,6 +97,7 @@ const ReactMarkDown = ({ data }) => {
             </a>
           );
         },
+        // Custom paragraph component for styling
         p({ children, ...props }) {
           return (
             <div
@@ -103,38 +109,29 @@ const ReactMarkDown = ({ data }) => {
             </div>
           );
         },
+        // Custom list components for styling
         ol({ children, ...props }) {
           return (
-            <p
+            <ol
               style={{ listStyleType: "number" }}
-              className="text-lg max-msm:text-[15px] text-[#FFF] font-helvetica font-normal tracking-[0.2px] leading-[28.8px]"
+              className="text-lg max-msm:text-[15px] pl-[21px] text-[#FFF] font-helvetica font-normal tracking-[0.2px] leading-[28.8px]"
               {...props}
             >
-              {children}
-            </p>
+              <li>{children}</li>
+            </ol>
           );
         },
         ul({ children, ...props }) {
           return (
-            <p
-              style={{ listStyleType: "number" }}
-              className="text-lg max-msm:text-[15px] text-[#FFF] font-helvetica font-normal tracking-[0.2px] leading-[28.8px]"
+            <ul
+              style={{ listStyleType: "disc" }}
+              className="text-lg max-msm:text-[15px] pl-[21px] text-[#FFF] font-helvetica font-normal tracking-[0.2px] leading-[28.8px]"
               {...props}
             >
               {children}
-            </p>
+            </ul>
           );
         },
-        // li({ children, ...props }) {
-        //   return (
-        //     <li
-        //       style={{ listStyleType: "disc" }}
-        //       className="text-lg text-[#FFF] font-helvetica font-normal tracking-[0.2px] leading-[28.8px]"
-        //     >
-        //       {children}
-        //     </li>
-        //   );
-        // }
       }}
     >
       {data}
