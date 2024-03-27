@@ -17,7 +17,6 @@ const Typewriter = ({ text, delay, onTypingEnd }) => {
     } else {
       console.log("This is called to stop animation!");
       onTypingEnd();
-      
     }
   }, [currentIndex, delay, text]);
 

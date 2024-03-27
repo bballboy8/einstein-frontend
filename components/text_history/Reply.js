@@ -1,90 +1,85 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
-const TextSelectorok = () => {
-    const [selectedText, setSelectedText] = useState('');
-    const [showReplyIcon, setShowReplyIcon] = useState(false);
-    const [showReplyText, setShowReplyText] = useState(false);
-    const [selectionCoordinates, setSelectionCoordinates] = useState({ x: 0, y: 0 });
-    const contentEditableRef = useRef(null);
+const TextSelectorok = ({ children, setReplyText }) => {
+  const [selectedText, setSelectedText] = useState("");
+  const [showReplyIcon, setShowReplyIcon] = useState(false);
 
-    useEffect(() => {
-        document.addEventListener('mouseup', handleOutsideClick);
+  const [selectionCoordinates, setSelectionCoordinates] = useState({
+    x: 0,
+    y: 0,
+  });
+  const contentEditableRef = useRef(null);
 
-        return () => {
-            document.removeEventListener('mouseup', handleOutsideClick);
-        };
-    }, []);
+  useEffect(() => {
+    document.addEventListener("mouseup", handleOutsideClick);
 
-    const handleTextSelection = () => {
-        const selection = window.getSelection();
-        const selectedText = selection.toString().trim();
-
-        if (selectedText !== '') {
-            setSelectedText(selectedText);
-            setShowReplyIcon(true);
-            setShowReplyText(false);
-            const selectionRange = selection.getRangeAt(0);
-            const rect = selectionRange.getBoundingClientRect();
-            const parentRect = selection.anchorNode.parentElement.getBoundingClientRect();
-            setSelectionCoordinates({ x: rect.left - parentRect.left + rect.width / 2, y: rect.top - parentRect.top });
-        } else {
-            setShowReplyIcon(false);
-            setShowReplyText(false);
-        }
+    return () => {
+      document.removeEventListener("mouseup", handleOutsideClick);
     };
+  }, []);
 
-    const handleReplyIconClick = () => {
-        setShowReplyIcon(false);
-        setShowReplyText(true);
-    };
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
 
-    const handleCloseButtonClick = () => {
-        setShowReplyText(false);
-    };
+    if (selectedText !== "") {
+      setSelectedText(selectedText);
+      setShowReplyIcon(true);
+      const selectionRange = selection.getRangeAt(0);
+      const rect = selectionRange.getBoundingClientRect();
+      const parentRect =
+        selection.anchorNode.parentElement.getBoundingClientRect();
+      setSelectionCoordinates({
+        x: rect.left - parentRect.left + rect.width / 2,
+        y: rect.top - parentRect.top,
+      });
+    } else {
+      setShowReplyIcon(false);
+    }
+  };
 
-    const handleOutsideClick = (event) => {
-        if (!event.target.closest('.text-container')) {
-            setShowReplyIcon(false);
-            setShowReplyText(false);
-        }
-    };
+  const handleReplyIconClick = () => {
+    setShowReplyIcon(false);
+    setReplyText(selectedText);
+  };
 
-    return (
-        <div className="mt-4">
-            <p>Select some text:</p>
-            <div
-                onMouseUp={handleTextSelection}
-                className="text-container border border-gray-300 p-4 relative"
-            >
-                {showReplyIcon && (
-                    <button
-                        className="bg-white p-2 rounded cursor-pointer"
-                        style={{ position: 'absolute', left: selectionCoordinates.x, top: selectionCoordinates.y - 40 }}
-                        onClick={handleReplyIconClick}
-                    >
-                        Reply
-                    </button>
-                )}
+  const handleOutsideClick = (event) => {
+    if (!event.target.closest(".text-container")) {
+      setShowReplyIcon(false);
+    }
+  };
 
-                <p>a monumental challenge, threatening to disrupt ecosystems, economies, and livelihoods worldwide through extreme weather events</p>
+  return (
+    <>
+      <span
+        onMouseUp={handleTextSelection}
+        className="text-container  p-4 relative"
+      >
+        {showReplyIcon && (
+          <button
+            className="bg-[#1B1E24] py-2 px-2 rounded-[10px] cursor-pointer border border-[#F2F2F2] min-w-[42px] min-h-[42px]"
+            style={{
+              position: "absolute",
+              left: selectionCoordinates.x,
+              top: selectionCoordinates.y - 10,
+            }}
+            onClick={handleReplyIconClick}
+          >
+            <Image
+              alt=""
+              width={24}
+              height={24}
+              src={"/reply-icon.png"}
+              className="cursor-pointer"
+            />
+          </button>
+        )}
 
-            </div>
-
-            {showReplyText && (
-                <div className='display_onreply_button text-[#fff]'>
-                    <p>Replying to:</p>
-                    <span onClick={handleCloseButtonClick}>close</span>
-                    <div
-                        ref={contentEditableRef}
-                        className="editable-div text-[#fff]"
-                        contentEditable="true"
-                    >
-                        {selectedText}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+        {children}
+      </span>
+    </>
+  );
 };
 
 export default TextSelectorok;

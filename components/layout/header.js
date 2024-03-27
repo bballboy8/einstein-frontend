@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
 import { Tooltip, Button } from "@nextui-org/react";
 import { useModelStatus } from "../context/ModelStatusContext";
 import Image from "next/image";
@@ -21,10 +21,16 @@ const Header = ({
   setClickChat,
   setMobileStatus,
   setChatTitle,
+  settingModelStatus,
 }) => {
   const { settingModel, setSettingModel } = useModelStatus();
   const { toggleStatus, setToggleStatus } = useModelStatus();
   const router = useRouter();
+  useEffect(() => {
+    if (settingModelStatus) {
+      setSettingModel(true);
+    }
+  }, [settingModelStatus]);
 
   return (
     <div className="flex justify-between px-[12px] max-mlg:px-0 py-[19px] bg-[#181818] max-msm:bg-[#000]">
@@ -198,7 +204,7 @@ const Header = ({
 
       <div className="flex flex-row gap-4 mr-5 max-msm:mr-5">
         {/* {userActive == true ? (
-          <Button className="h-14 bg-gradient-to-r from-[#7b88ff] to-[#68c3ff] rounded-full min-w-[115px] text-[#fff] leading-normal font-helvetica h-[42px]">
+          <Button className="h-14 gr-1 rounded-full min-w-[115px] text-[#fff] leading-normal font-helvetica h-[42px]">
             <Image
               alt="user"
               width={16}

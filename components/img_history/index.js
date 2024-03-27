@@ -854,44 +854,46 @@ const Img_History = ({
               </Modal>
             </div>
           )}
-          <div className="flex flex-row gap-11 font-base font-helvetica font-medium leading-normal ml-3">
-            <p
-              className="text-[#FFF] cursor-pointer"
-              onClick={() => {
-                setNumber(0);
-                setUpScale(true);
-              }}
-            >
-              U1
-            </p>
-            <p
-              className="text-[#FFF] cursor-pointer"
-              onClick={() => {
-                setNumber(1);
-                setUpScale(true);
-              }}
-            >
-              U2
-            </p>
-            <p
-              className="text-[#FFF] cursor-pointer"
-              onClick={() => {
-                setNumber(2);
-                setUpScale(true);
-              }}
-            >
-              U3
-            </p>
-            <p
-              className="text-[#FFF] cursor-pointer"
-              onClick={() => {
-                setNumber(3);
-                setUpScale(true);
-              }}
-            >
-              U4
-            </p>
-          </div>
+          {loading == false && (
+            <div className="flex flex-row gap-11 font-base font-helvetica font-medium leading-normal ml-3">
+              <p
+                className="text-[#FFF] cursor-pointer"
+                onClick={() => {
+                  setNumber(0);
+                  setUpScale(true);
+                }}
+              >
+                U1
+              </p>
+              <p
+                className="text-[#FFF] cursor-pointer"
+                onClick={() => {
+                  setNumber(1);
+                  setUpScale(true);
+                }}
+              >
+                U2
+              </p>
+              <p
+                className="text-[#FFF] cursor-pointer"
+                onClick={() => {
+                  setNumber(2);
+                  setUpScale(true);
+                }}
+              >
+                U3
+              </p>
+              <p
+                className="text-[#FFF] cursor-pointer"
+                onClick={() => {
+                  setNumber(3);
+                  setUpScale(true);
+                }}
+              >
+                U4
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

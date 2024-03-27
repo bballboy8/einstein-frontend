@@ -9,6 +9,7 @@ import ReactMarkDown from "../Markdown";
 import { apiURL } from "@/config";
 import { useDisclosure } from "@nextui-org/react";
 import { Typewriter } from "../chat/typeWriter";
+import TextSelectorok from "./Reply";
 
 const Text_History = ({
   data,
@@ -34,7 +35,7 @@ const Text_History = ({
   setTextAnimationIndex,
   textAnimationIndex,
   setToggleStatus,
-
+  setContextMenueStatus,
   setReplyStatus,
 }) => {
   const [tabSelected, setTabSelected] = useState(data.type);
@@ -80,6 +81,7 @@ const Text_History = ({
       setContextedMenuIndex(index);
 
       setContextedMenuPinnedStatus(pinned);
+      setContextMenueStatus(true);
     }
   };
 
@@ -200,7 +202,7 @@ const Text_History = ({
 
   const replyFunction = (index, text) => {
     // setBlur(true);
-    setID(index);
+    // setID(index);
 
     setReplyStatus(true, index, msgIndex, text);
   };
@@ -369,6 +371,10 @@ const Text_History = ({
 
   const handleToggleStatus = () => {
     setToggleStatus(0);
+  };
+
+  const onSetReplyText = (text) => {
+    setReplyStatus(true, index, msgIndex, text);
   };
   return (
     <div key={index} className="flex flex-col w-full">
@@ -634,7 +640,9 @@ const Text_History = ({
                       onTypingEnd={handleTypingEnd}
                     />
                   ) : (
-                    <ReactMarkDown data={currentMsg} />
+                    <TextSelectorok setReplyText={onSetReplyText}>
+                      <ReactMarkDown data={currentMsg} />
+                    </TextSelectorok>
                   )}
                 </div>
               ) : (
@@ -653,7 +661,12 @@ const Text_History = ({
                       />
                     </>
                   ) : (
-                    <ReactMarkDown data={data.content} />
+                    <>
+                      <TextSelectorok setReplyText={onSetReplyText}>
+                        {/* {data.content} */}
+                        <ReactMarkDown data={data.content} />
+                      </TextSelectorok>
+                    </>
                   )}
                 </div>
               )}

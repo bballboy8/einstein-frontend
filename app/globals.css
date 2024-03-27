@@ -177,3 +177,16 @@ body {
   max-height: calc(100% - 40px); /* Adjust max height to accommodate header and close icon */
   overflow-y: auto;
 }
+
+.h-calculate {
+  height: calc(100vh - 24px);
+}
+
+.active-aspect-ratio{
+  background-color: #14171a8a;
+}
+
+.gr-1{
+  background: linear-gradient(92.1deg, #7A88FF 6.23%, #68C3FF 90.35%);
+}
+

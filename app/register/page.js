@@ -10,6 +10,9 @@ import {
   NotificationManager,
 } from "react-notifications";
 import passwordValidator from "password-validator";
+import Image from "next/image";
+import eyeIcon from "../../public/svg/eye.svg";
+import eyeSlashIcon from "../../public/svg/eyecross.svg";
 
 // Reusable Button Component
 const RegisterButton = ({
@@ -144,6 +147,12 @@ const RegistrationOptions = () => {
     },
   ];
 
+  const [showPassword2, setShowPassword2] = useState(false);
+
+  const togglePasswordVisibility2 = () => {
+    setShowPassword2(!showPassword2);
+  };
+
   return (
     <div className="h-screen overflow-auto bg-[length:1920px_1024px] bg-[url('/background.jpg')] flex flex-col items-center justify-center">
       {showRegistrationOptions && (
@@ -169,9 +178,7 @@ const RegistrationOptions = () => {
                 className="text-center mt-3 cursor-pointer text-white"
                 onClick={() => router.push("/signin")}
               >
-                <span style={{ fontSize: "15px" }}>
-                  Have account? Sign In
-                </span>
+                <span style={{ fontSize: "15px" }}>Have account? Sign In</span>
               </div>
             </main>
           </section>
@@ -319,6 +326,19 @@ const RegistrationForm = ({ onClose }) => {
     }
   };
 
+  const [password1, setPassword1] = useState("");
+  const [showPassword1, setShowPassword1] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword1(!showPassword1);
+  };
+
+  const [showPassword2, setShowPassword2] = useState(false);
+
+  const togglePasswordVisibility2 = () => {
+    setShowPassword2(!showPassword2);
+  };
+
   return (
     <form className="flex flex-col px-6 pt-6 pb-9 text-base font-medium text-white rounded-[10px] bg-[#2D2D2D] min-w-[400px]">
       <img
@@ -346,24 +366,95 @@ const RegistrationForm = ({ onClose }) => {
         onChange={handleInputChange}
         error={formErrors.email}
       />
-      <InputField
-        label="Password"
-        type="password"
-        name="password"
-        value={userData.password}
-        onChange={handleInputChange}
-        error={formErrors.password}
-      />
-      <InputField
+
+      <div className="relative">
+        <InputField
+          label="Password"
+          type={showPassword1 ? "text" : "password"}
+          name="password"
+          value={userData.password}
+          onChange={(e) => {
+            handleInputChange(e);
+            setPassword1(e.target.value);
+          }}
+          error={formErrors.password}
+        />
+        <button
+          type="button"
+          className="absolute top-1/2 right-4 transform -translate-y-1/2 focus:outline-none"
+          onClick={togglePasswordVisibility}
+        >
+          <div>
+            {showPassword1 ? (
+              <Image
+                alt="Hide password"
+                width={20}
+                height={20}
+                src={eyeSlashIcon}
+                className="cursor-pointer mt-[26px]"
+              />
+            ) : (
+              <Image
+                alt="Show password"
+                width={20}
+                height={20}
+                src={eyeIcon}
+                className="cursor-pointer mt-[26px]"
+              />
+            )}
+          </div>
+        </button>
+      </div>
+
+      <div className="relative">
+        <InputField
+          label="Password"
+          type={showPassword2 ? "text" : "password"}
+          name="confirmpassword"
+          value={userData.confirmpassword}
+          onChange={(e) => {
+            handleInputChange(e);
+            setPassword1(e.target.value);
+          }}
+          error={formErrors.confirmpassword}
+        />
+        <button
+          type="button"
+          className="absolute top-1/2 right-4 transform -translate-y-1/2 focus:outline-none"
+          onClick={togglePasswordVisibility2}
+        >
+          <div>
+            {showPassword2 ? (
+              <Image
+                alt="Hide password"
+                width={20}
+                height={20}
+                src={eyeSlashIcon}
+                className="cursor-pointer mt-[26px]"
+              />
+            ) : (
+              <Image
+                alt="Show password"
+                width={20}
+                height={20}
+                src={eyeIcon}
+                className="cursor-pointer mt-[26px]"
+              />
+            )}
+          </div>
+        </button>
+      </div>
+
+      {/* <InputField
         label="Confirm Password"
         type="password"
         name="confirmpassword"
         value={userData.confirmpassword}
         onChange={handleInputChange}
         error={formErrors.confirmpassword}
-      />
+      /> */}
       <button
-        className={`justify-center items-center px-16 py-2 mt-9 text-white rounded-xl bg-gradient-to-r from-[#7B88FF] to-[#64D0FF] hover:bg-blue-700 focus:ring-4 focus:ring-blue-300`}
+        className={`justify-center items-center px-16 py-2 mt-9 text-white rounded-xl gr-1 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300`}
         type="button"
         onClick={handleSubmit}
       >
@@ -376,7 +467,9 @@ const RegistrationForm = ({ onClose }) => {
         className="flex justify-center items-center px-16 py-2.5 mt-5 text-white rounded-xl border border-indigo-400 border-solid text-center font-inter"
         onClick={() => router.push("/signin")}
       >
-        <span className="font-inter" style={{ fontSize: "15px" }}>Have account? Sign In</span>
+        <span className="font-inter" style={{ fontSize: "15px" }}>
+          Have account? Sign In
+        </span>
       </div>
     </form>
   );

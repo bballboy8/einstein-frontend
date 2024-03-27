@@ -96,6 +96,7 @@ const Chat = ({
   const [replyText, setReplyText] = useState("");
   const [replyMsgIndex, setReplyMsgIndex] = useState(0);
   const [replyIndex, setReplyIndex] = useState(0);
+  const [contextMenueStatus, setContextMenueStatus] = useState(false);
   const OnSetPinnedMessageMsgType = (value) => {
     setPinnedMessageMsgType(value);
   };
@@ -493,6 +494,10 @@ const Chat = ({
       }
       setInputPlaceholder(`Message ${imgList[0]}`);
     }
+    setReplyStatus1(false);
+    setReplyText("");
+    setReplyIndex(0);
+    setReplyMsgIndex(0);
   }, [chatHistoryID, imgHistoryID, imageModel]);
 
   useAutosizeTextArea(textAreaRef.current, value);
@@ -840,6 +845,10 @@ const Chat = ({
     }
   };
 
+  const OnSetContextMenueStatus = (value) => {
+    setContextMenueStatus(value);
+  };
+
   return (
     <div
       className={`flex flex-1 flex-col pl-8 max-mlg:px-2 ${
@@ -981,6 +990,8 @@ const Chat = ({
                         textAnimationIndex={textAnimationIndex}
                         setToggleStatus={OnSetToggleStatus}
                         setReplyStatus={OnSetReplyStatus}
+                        setContextMenueStatus={OnSetContextMenueStatus}
+                        contextMenueStatus={contextMenueStatus}
                       />
                     </span>
                   ))}

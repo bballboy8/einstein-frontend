@@ -36,10 +36,11 @@ export default function Home() {
 
   const onSetToggleStatus = (value) => {
     setToggleStatus(0);
+    setSettingModel(true);
   };
 
   return (
-    <div className="h-screen flex flex-col max-msm:bg-[#000]">
+    <div className="h-screen flex flex-col max-msm:bg-[#000] h-calculate">
       <Header
         setUserActive={setUserActive}
         userActive={userActive}
@@ -48,6 +49,7 @@ export default function Home() {
         setClickChat={setClickChat}
         setMobileStatus={setMobileStatus}
         setChatTitle={setChatTitle}
+        settingModelStatus={settingModel}
       />
       <div className="flex flex-1 flex-row pb-2 overflow-auto">
         <HistorySider
