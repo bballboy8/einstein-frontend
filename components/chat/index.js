@@ -584,7 +584,7 @@ const Chat = ({
     "GPT-3.5": "gpt3",
     Gemini: "gemini",
     Mistral: "mistral",
-    Perplexity: "perplexityai",
+    Perplexity: "perplexity",
   };
 
   const TextGenerate = () => {
