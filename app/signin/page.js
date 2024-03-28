@@ -11,6 +11,10 @@ import { useGoogleLogin } from "@react-oauth/google";
 import InputField from "../ui/InputField";
 import passwordValidator from "password-validator";
 
+import Image from "next/image";
+import eyeIcon from "../../public/svg/eye.svg";
+import eyeSlashIcon from "../../public/svg/eyecross.svg";
+
 // Reusable Button Component
 const SignInButton = ({
   imageUrl,
@@ -248,6 +252,12 @@ function EmailSignInForm({ onClose }) {
     }
   };
 
+  const [showPassword1, setShowPassword1] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword1(!showPassword1);
+  };
+
   return (
     <form
       className="flex flex-col px-6 pt-6 pb-9 text-base font-medium text-white rounded-[10px] bg-[#2D2D2D] min-w-[400px]"
@@ -277,7 +287,51 @@ function EmailSignInForm({ onClose }) {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
+
       <div className="flex flex-col mt-0">
+        <label htmlFor="password" className="sr-only">
+          Password
+        </label>
+        <div className="relative">
+          <InputField
+            label="Password"
+            type={showPassword1 ? "text" : "password"}
+            name="password"
+            required
+            placeholder="Password"
+            aria-label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            className="absolute top-1/2 right-4 transform -translate-y-1/2 focus:outline-none"
+            onClick={togglePasswordVisibility}
+          >
+            <div>
+              {showPassword1 ? (
+                <Image
+                  alt="Hide password"
+                  width={20}
+                  height={20}
+                  src={eyeSlashIcon}
+                  className="cursor-pointer mt-[26px]"
+                />
+              ) : (
+                <Image
+                  alt="Show password"
+                  width={20}
+                  height={20}
+                  src={eyeIcon}
+                  className="cursor-pointer mt-[26px]"
+                />
+              )}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* <div className="flex flex-col mt-0">
         <label htmlFor="password" className="sr-only">
           Password
         </label>
@@ -291,12 +345,12 @@ function EmailSignInForm({ onClose }) {
           aria-label="Password"
           onChange={(e) => setPassword(e.target.value)}
         />
-      </div>
+      </div> */}
 
       <div className="flex flex-col mt-5">
         <button
           type="submit"
-          className="px-16 py-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#7B88FF] to-[#64D0FF] hover:bg-blue-700 text-white"
+          className="px-16 py-2 whitespace-nowrap rounded-xl gr-1 hover:bg-blue-700 text-white"
         >
           Sign in
         </button>

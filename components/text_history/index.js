@@ -9,6 +9,7 @@ import ReactMarkDown from "../Markdown";
 import { apiURL } from "@/config";
 import { useDisclosure } from "@nextui-org/react";
 import { Typewriter } from "../chat/typeWriter";
+import TextSelectorok from "./Reply";
 
 const Text_History = ({
   data,
@@ -33,6 +34,9 @@ const Text_History = ({
   setModelType,
   setTextAnimationIndex,
   textAnimationIndex,
+  setToggleStatus,
+  setContextMenueStatus,
+  setReplyStatus,
 }) => {
   const [tabSelected, setTabSelected] = useState(data.type);
   const [copyStatus, setCopyStatus] = useState(false);
@@ -77,6 +81,7 @@ const Text_History = ({
       setContextedMenuIndex(index);
 
       setContextedMenuPinnedStatus(pinned);
+      setContextMenueStatus(true);
     }
   };
 
@@ -195,9 +200,11 @@ const Text_History = ({
       });
   };
 
-  const replyFunction = (index) => {
-    setBlur(true);
-    setID(index);
+  const replyFunction = (index, text) => {
+    // setBlur(true);
+    // setID(index);
+
+    setReplyStatus(true, index, msgIndex, text);
   };
 
   const onCancel = () => {
@@ -251,6 +258,63 @@ const Text_History = ({
     setModelType(outerText);
     Summarize(sumData, msgIndex, index);
   };
+
+  const [selectedText, setSelectedText] = useState("");
+  const [showReplyIcon, setShowReplyIcon] = useState(false);
+  const [selectionCoordinates, setSelectionCoordinates] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  useEffect(() => {
+    document.addEventListener("mouseup", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mouseup", handleOutsideClick);
+    };
+  }, []);
+
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    if (selectedText !== "") {
+      setSelectedText(selectedText);
+      setShowReplyIcon(true);
+      const selectionRange = selection.getRangeAt(0);
+      const rect = selectionRange.getBoundingClientRect();
+      const parentRect =
+        selection.anchorNode.parentElement.getBoundingClientRect();
+      setSelectionCoordinates({
+        x: rect.left - parentRect.left + rect.width / 2,
+        y: rect.top - parentRect.top,
+      });
+    } else {
+      setShowReplyIcon(false);
+    }
+  };
+
+  const handleReplyIconClick = () => {
+    const textarea = document.getElementById("review-textaad");
+    textarea.value = ""; // Clear existing text
+    const newText = selectedText;
+    textarea.value = newText;
+    setShowReplyIcon(false);
+    setSelectedText("");
+  };
+
+  const handleOutsideClick = (event) => {
+    if (!event.target.closest(".text-container")) {
+      setShowReplyIcon(false);
+    }
+  };
+
+  const [liked, setLiked] = useState(false);
+
+  const toggleLike = () => {
+    setLiked(!liked);
+  };
+
   const Summarize = (data, msgIndex, index) => {
     const updatedChatHistory = [...chatHistory];
     updatedChatHistory[msgIndex][index]["role"] = "loading";
@@ -278,6 +342,7 @@ const Text_History = ({
   function handleTypingEnd() {
     // Reset textAnimationIndex when typing ends
     setTextAnimationIndex(-1);
+    setCurrentMsg(data.content);
   }
 
   useEffect(() => {
@@ -302,6 +367,14 @@ const Text_History = ({
       setCurrentMsgIndex(currentMsgIndex + 1);
       setCurrentMsg(data.content[currentMsgIndex + 1]);
     }
+  };
+
+  const handleToggleStatus = () => {
+    setToggleStatus(0);
+  };
+
+  const onSetReplyText = (text) => {
+    setReplyStatus(true, index, msgIndex, text);
   };
   return (
     <div key={index} className="flex flex-col w-full">
@@ -390,6 +463,18 @@ const Text_History = ({
                 />
               </Tooltip>
               <div className="max-w-[650px] max-xl:max-w-[400px] max-msm:max-w-[250px] break-words text-[20px] text-[#FFF] font-helvetica font-normal leading-8 bg-[#0A84FF] rounded-[20px] py-3 px-5 ml-2">
+                {data.reply && (
+                  <div className=" min-w-[100%] flex flex-row w-full ">
+                    <div className=" relative w-full">
+                      <span className="text-[#fff] text-[12px] font-normal font-helvetica">
+                        Replying to:{" "}
+                      </span>
+                      <p className="text-[#fff] text-[14px] font-normal font-helvetica mt-[8px] border-l-1 border-[@fff] pl-[12px] py-[2px]">
+                        {data.reply}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <ReactMarkDown data={data.content} />
               </div>
             </div>
@@ -475,7 +560,11 @@ const Text_History = ({
                   <div>
                     <p className="text-[#FFF]">
                       Add more{" "}
-                      <Link href="" className="text-[#0A84FF]">
+                      <Link
+                        href=""
+                        onClick={handleToggleStatus}
+                        className="text-[#0A84FF]"
+                      >
                         models
                       </Link>
                     </p>
@@ -551,7 +640,9 @@ const Text_History = ({
                       onTypingEnd={handleTypingEnd}
                     />
                   ) : (
-                    <ReactMarkDown data={currentMsg} />
+                    <TextSelectorok setReplyText={onSetReplyText}>
+                      <ReactMarkDown data={currentMsg} />
+                    </TextSelectorok>
                   )}
                 </div>
               ) : (
@@ -562,13 +653,20 @@ const Text_History = ({
                   }
                 >
                   {textAnimationIndex == msgIndex ? (
-                    <Typewriter
-                      text={data.content}
-                      delay={15}
-                      onTypingEnd={handleTypingEnd}
-                    />
+                    <>
+                      <Typewriter
+                        text={data.content}
+                        delay={15}
+                        onTypingEnd={handleTypingEnd}
+                      />
+                    </>
                   ) : (
-                    <ReactMarkDown data={data.content} />
+                    <>
+                      <TextSelectorok setReplyText={onSetReplyText}>
+                        {/* {data.content} */}
+                        <ReactMarkDown data={data.content} />
+                      </TextSelectorok>
+                    </>
                   )}
                 </div>
               )}
@@ -664,9 +762,52 @@ const Text_History = ({
                       </Tooltip>
                     )}
                   </CopyToClipboard>
-
+                  {/* <Tooltip
+                    content={<p className="text-[#FFF]">Good response</p>}
+                    showArrow
+                    placement="bottom"
+                    delay={0}
+                    closeDelay={0}
+                    className=""
+                    classNames={{
+                      base: ["before:bg-[##2E353C]"],
+                      content: [
+                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                      ],
+                    }}
+                    motionProps={{
+                      variants: {
+                        exit: {
+                          opacity: 0,
+                          transition: {
+                            duration: 0.1,
+                            ease: "easeIn",
+                          },
+                        },
+                        enter: {
+                          opacity: 1,
+                          transition: {
+                            duration: 0.15,
+                            ease: "easeOut",
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <Image
+                      alt=""
+                      width={19}
+                      height={18}
+                      onClick={() => voteFunc(index)}
+                      src={` ${id == index && vote == true
+                          ? "svg/voteAction.svg"
+                          : "svg/vote.svg"
+                        }`}
+                      className="cursor-pointer"
+                    />
+                  </Tooltip>
                   <Tooltip
-                    content={<p className="text-[#FFF]">Like Response</p>}
+                    content={<p className="text-[#FFF]">Bad response</p>}
                     showArrow
                     placement="bottom"
                     delay={0}
@@ -698,11 +839,71 @@ const Text_History = ({
                   >
                     <Image
                       alt=""
-                      width={16}
-                      height={21}
-                      src={"svg/Icon-heart.svg"}
+                      width={20}
+                      height={19}
+                      onClick={() => devoteFunc(index)}
+                      src={` ${id == index && deVote == true
+                          ? "svg/devoteAction.svg"
+                          : "svg/devote.svg"
+                        }`}
                       className="cursor-pointer"
                     />
+                  </Tooltip> */}
+
+                  <Tooltip
+                    content={
+                      <p className="text-[#FFF]">
+                        {liked ? "Liked Response" : "Like Response"}
+                      </p>
+                    }
+                    showArrow
+                    placement="bottom"
+                    delay={0}
+                    closeDelay={0}
+                    classNames={{
+                      base: ["before:bg-[##2E353C]"],
+                      content: [
+                        "bg-[#2E353C] text-sm font-normal leading-4 px-3 py-2",
+                      ],
+                    }}
+                    motionProps={{
+                      variants: {
+                        exit: {
+                          opacity: 0,
+                          transition: {
+                            duration: 0.1,
+                            ease: "easeIn",
+                          },
+                        },
+                        enter: {
+                          opacity: 1,
+                          transition: {
+                            duration: 0.15,
+                            ease: "easeOut",
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    {liked ? (
+                      <Image
+                        alt=""
+                        width={16}
+                        height={21}
+                        src={"svg/Icon-heart-red.svg"}
+                        className="cursor-pointer"
+                        onClick={toggleLike}
+                      />
+                    ) : (
+                      <Image
+                        alt=""
+                        width={16}
+                        height={21}
+                        src={"svg/Icon-heart.svg"}
+                        className="cursor-pointer"
+                        onClick={toggleLike}
+                      />
+                    )}
                   </Tooltip>
 
                   <Tooltip
@@ -751,7 +952,7 @@ const Text_History = ({
                 {blur == false || index != id ? (
                   <div
                     className={`text-[#A2A2A2] text-base font-normal leading-normal hover:cursor-pointer ml-4`}
-                    onClick={() => replyFunction(index)}
+                    onClick={() => replyFunction(index, currentMsg)}
                   >
                     Reply
                   </div>
@@ -889,7 +1090,7 @@ const ContextMenu = ({
           </div>
         )}
 
-        <hr className="border-t border-white opacity-20 my-1" />
+        {/* <hr className="border-t border-white opacity-20 my-1" />
         <div
           className="flex gap-4 mt-2 whitespace-nowrap font-nasalization "
           onClick={() => handleReply()}
@@ -900,7 +1101,7 @@ const ContextMenu = ({
             className="shrink-0 self-start aspect-[1.14] fill-stone-300 w-[17px]"
           />
           Reply
-        </div>
+        </div> */}
         <hr className="border-t border-white opacity-20 my-1" />
         <div
           className="flex gap-3.5 mt-2 text-pink-500 font-nasalization "

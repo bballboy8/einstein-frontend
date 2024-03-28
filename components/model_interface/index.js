@@ -102,7 +102,7 @@ const Model_Interface = () => {
               tabContent: "text-[#C2C2C2] px-2",
               cursor: "bg-[#3B3B3D]",
               tabList: "bg-[#29292B] p-0",
-              tabContent: "group-data-[selected=true]:text-[#FFF]"
+              tabContent: "group-data-[selected=true]:text-[#FFF]",
             }}
           >
             <Tab key="text" title="Text">
@@ -137,7 +137,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -194,7 +194,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -250,7 +250,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -306,7 +306,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -363,7 +363,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -424,7 +424,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -481,7 +481,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -537,7 +537,7 @@ const Model_Interface = () => {
                           "group-data-[hover=true]:border-primary",
                           "group-data-[selected=true]:ml-6",
                           "group-data-[selected]:group-data-[pressed]:ml-4"
-                        )
+                        ),
                       }}
                     ></Switch>
                   </div>
@@ -569,11 +569,14 @@ const Model_Interface = () => {
             <Tab key="code" title="Code">
               <div className="w-full px-5 mt-[80px]">
                 <div className="flex flex-col gap-[55px] justify-center">
-                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px]">
+                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px] text-center">
                     We thank you for your interest. These models are currently
-                    in beta testing. To gain early access, please join our
-                    waitlist. Meanwhile, feel free to use our text or image
-                    model generation services
+                    in beta testing. To gain early access, please <br />{" "}
+                    <a href="#" className="text-[#0A84FF]">
+                      join our waitlist
+                    </a>
+                    . Meanwhile, feel free to use our text or image model
+                    generation services
                   </p>
                   <div className="flex flex-row gap-6 text-base font-nasalization justify-center">
                     <Button
@@ -581,6 +584,7 @@ const Model_Interface = () => {
                       size="sm"
                       radius="full"
                       className="px-10 py-2 bg-[#0a84ff]"
+                      onClick={() => setSelected("text")}
                     >
                       Text
                     </Button>
@@ -589,6 +593,7 @@ const Model_Interface = () => {
                       size="sm"
                       radius="full"
                       className="px-10 bg-[#0a84ff]"
+                      onClick={() => setSelected("image")}
                     >
                       Image
                     </Button>
@@ -599,11 +604,14 @@ const Model_Interface = () => {
             <Tab key="video" title="Video">
               <div className="w-full px-5 mt-[80px]">
                 <div className="flex flex-col gap-[55px]">
-                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px]">
+                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px] text-center">
                     We thank you for your interest. These models are currently
-                    in beta testing. To gain early access, please join our
-                    waitlist. Meanwhile, feel free to use our text or image
-                    model generation services
+                    in beta testing. To gain early access, please <br />{" "}
+                    <a href="#" className="text-[#0A84FF]">
+                      join our waitlist
+                    </a>
+                    . Meanwhile, feel free to use our text or image model
+                    generation services
                   </p>
                   <div className="flex flex-row gap-6 text-base font-nasalization justify-center">
                     <Button
@@ -611,6 +619,7 @@ const Model_Interface = () => {
                       size="sm"
                       radius="full"
                       className="px-10 py-2 bg-[#0a84ff]"
+                      onClick={() => setSelected("text")}
                     >
                       Text
                     </Button>
@@ -619,6 +628,7 @@ const Model_Interface = () => {
                       size="sm"
                       radius="full"
                       className="px-10 bg-[#0a84ff]"
+                      onClick={() => setSelected("image")}
                     >
                       Image
                     </Button>
@@ -629,11 +639,14 @@ const Model_Interface = () => {
             <Tab key="audio" title="Audio">
               <div className="w-full px-5 mt-[80px]">
                 <div className="flex flex-col gap-[55px]">
-                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px]">
+                  <p className="text-[#D0D0D0] font-helvetica font-normal leading-7 tracking-[0.18px] text-[18px] text-center">
                     We thank you for your interest. These models are currently
-                    in beta testing. To gain early access, please join our
-                    waitlist. Meanwhile, feel free to use our text or image
-                    model generation services
+                    in beta testing. To gain early access, please <br />{" "}
+                    <a href="#" className="text-[#0A84FF]">
+                      join our waitlist
+                    </a>
+                    . Meanwhile, feel free to use our text or image model
+                    generation services
                   </p>
                   <div className="flex flex-row gap-6 text-base font-nasalization justify-center">
                     <Button
@@ -641,6 +654,7 @@ const Model_Interface = () => {
                       size="sm"
                       radius="full"
                       className="px-10 py-2 bg-[#0a84ff]"
+                      onClick={() => setSelected("text")}
                     >
                       Text
                     </Button>
@@ -649,6 +663,7 @@ const Model_Interface = () => {
                       size="sm"
                       radius="full"
                       className="px-10 bg-[#0a84ff]"
+                      onClick={() => setSelected("image")}
                     >
                       Image
                     </Button>

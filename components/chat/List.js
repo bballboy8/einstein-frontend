@@ -44,7 +44,7 @@ function DualSelect() {
                 className="cursor-pointer ml-[13px] mt-[12px] mb-[6px]"
               />
               {leftOptions.map((option, index) => (
-                <li className='cursor-pointer px-4 py-1.5 text-left hover:bg-[#14171a8a]' key={index} onClick={() => handleOptionSelect(option)}>{option}</li>
+                <li className={`cursor-pointer px-4 py-1.5 text-left hover:bg-[#14171a8a] ${option === selectedOption ? 'active-aspect-ratio' : ''}`} key={index} onClick={() => handleOptionSelect(option)}>{option}</li>
               ))}
             </ul>
             <ul className="w-[60px] bg-[#2E353C] rounded-[10px] font-nasalization text-[14.2px] text-[#fff]">
@@ -57,7 +57,7 @@ function DualSelect() {
               />
 
               {rightOptions.map((option, index) => (
-                <li className='cursor-pointer px-4 py-1.5 hover:bg-[#14171a8a]' key={index} onClick={() => handleOptionSelect(option)}>{option}</li>
+                <li className={`cursor-pointer px-4 py-1.5 hover:bg-[#14171a8a] ${option === selectedOption ? 'active-aspect-ratio' : ''}`} key={index} onClick={() => handleOptionSelect(option)}>{option}</li>
               ))}
             </ul>
           </div>
