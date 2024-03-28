@@ -956,7 +956,7 @@ const Chat = ({
               {chatHistory.map((messages, msgIndex) => (
                 <div key={msgIndex} className="message-group">
                   {messages.map((message, index) => (
-                    <span
+                    <span key={`${msgIndex}-${index}`}
                       ref={
                         index === pinnedMessageIndex &&
                         msgIndex === pinnedMessageMsgIndex
@@ -1003,7 +1003,7 @@ const Chat = ({
               {imgHistory.map((data, msgIndex) => (
                 <div key={msgIndex} className="message-group">
                   {data.map((image_data, index) => (
-                    <span
+                    <span key={`${msgIndex}-${index}`}
                       ref={
                         index === pinnedMessageIndex &&
                         msgIndex === pinnedMessageMsgIndex
@@ -1055,14 +1055,14 @@ const Chat = ({
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                        “Rewrite this paragraph to be more concise...”
+                        &quot;Rewrite this paragraph to be more concise...&quot;
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                        "Summarize this article in 5 bullet points..."
+                      &quot;Summarize this article in 5 bullet points...&quot;
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                        "Based on this data, predict future trends in the
-                        market."
+                        &quot;Based on this data, predict future trends in the
+                        market.&quot;
                       </div>
                     </div>
                   </>
@@ -1077,10 +1077,10 @@ const Chat = ({
                         “Tarzan riding a lion”
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                        "Detailed oil painting of Muhammad Ali"
+                      &quot;Detailed oil painting of Muhammad Ali&quot;
                       </div>
                       <div className="flex flex-col bg-[#1B1E24] rounded-[20px] w-full mx-auto my-auto px-5 py-6 text-[#D0D0D0] text-[18px] leading-normal font-helvetica">
-                        "Mordern home in the hills of jungle"
+                      &quot;Modern home in the hills of jungle&quot;
                       </div>
                     </div>
                   </>

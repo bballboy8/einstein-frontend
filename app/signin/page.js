@@ -162,7 +162,7 @@ const SignInOptions = () => {
                 onClick={() => router.push("/register")}
               >
                 <span style={{ fontSize: "15px" }}>
-                  Don't have account? Register
+                &quot;Don&apos;t have an account? Register&quot;
                 </span>
               </div>
             </main>
